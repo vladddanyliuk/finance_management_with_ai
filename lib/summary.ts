@@ -32,10 +32,10 @@ export const calculateMonthSummary = (
   const netTransactions = incomeTransactionsTotal - expenseTransactionsTotal;
   const remaining = plannedRemaining + netTransactions;
 
-  const end = endOfMonth(parseISO(`${month}-01`));
-  const today = new Date();
-  const daysLeft = Math.max(1, differenceInCalendarDays(end, today) + 1);
-  const dailyBudget = remaining / daysLeft;
+  const monthStart = parseISO(`${month}-01`);
+  const monthEnd = endOfMonth(monthStart);
+  const daysInMonth = Math.max(1, differenceInCalendarDays(monthEnd, monthStart) + 1);
+  const dailyBudget = remaining / daysInMonth;
 
   return {
     month,

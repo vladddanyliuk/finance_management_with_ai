@@ -34,6 +34,16 @@ export default function DashboardPage() {
     [month, settings, transactions]
   );
 
+  const availableMonths = useMemo(() => {
+    const set = new Set<string>([
+      settings.lastSelectedMonth,
+      ...settings.customMonths,
+    ]);
+    transactions.forEach((tx) => set.add(tx.month));
+    settings.oneTimeExpenses.forEach((tx) => set.add(tx.month));
+    return Array.from(set).sort();
+  }, [settings.customMonths, settings.lastSelectedMonth, settings.oneTimeExpenses, transactions]);
+
   const monthTransactions = useMemo(
     () => transactions.filter((tx) => tx.month === month).slice(0, 5),
     [transactions, month]
@@ -82,6 +92,12 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAddMonth = (newMonth: string) => {
+    const customMonths = Array.from(new Set([...settings.customMonths, newMonth]));
+    setSettings({ customMonths, lastSelectedMonth: newMonth });
+    setMonth(newMonth);
+  };
+
   const downloadPdf = () => {
     const doc = new jsPDF();
     const lines = doc.splitTextToSize(aiPlan || "No plan", 180);
@@ -94,8 +110,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
-      <MonthNavigator month={month} onChange={handleMonthChange} />
+    <div className="space-y-6 pb-12 animate-slideIn">
+      <MonthNavigator
+        month={month}
+        onChange={handleMonthChange}
+        availableMonths={availableMonths}
+        onAddMonth={handleAddMonth}
+      />
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Default income" value={currencyFormat(summary.defaultIncome, settings.currency)} />
         <Card title="Fixed costs" value={currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal, settings.currency)} />
@@ -119,7 +140,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">AI monthly plan</h2>
           <button
-            className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-60"
+            className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow disabled:opacity-60"
             onClick={generateAiPlan}
             disabled={aiLoading}
           >
@@ -133,7 +154,7 @@ export default function DashboardPage() {
               {aiPlan}
             </ReactMarkdown>
             <button
-              className="rounded-full border border-blue-600 px-4 py-2 text-sm text-blue-600"
+              className="rounded-full border border-blue-600 px-4 py-2 text-sm text-blue-600 transition-all duration-200 hover:-translate-y-0.5 hover:shadow"
               onClick={downloadPdf}
             >
               Download PDF

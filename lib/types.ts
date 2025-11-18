@@ -33,6 +33,7 @@ export interface UserSettings {
   defaultMonthlyIncome: number;
   recurringExpenses: RecurringExpense[];
   oneTimeExpenses: OneTimePlannedExpense[];
+  customMonths: string[];
   autoBackupEnabled: boolean;
   autoBackupMaxEntries: number;
   lastSelectedMonth: string;

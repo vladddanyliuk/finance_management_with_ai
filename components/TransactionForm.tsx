@@ -90,7 +90,7 @@ export const TransactionForm = () => {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-xl bg-blue-600 px-4 py-2 text-white disabled:opacity-70"
+        className="w-full rounded-xl bg-blue-600 px-4 py-2 text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow disabled:opacity-70"
       >
         Add
       </button>

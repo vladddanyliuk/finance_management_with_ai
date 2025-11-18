@@ -45,17 +45,20 @@ export default function BackupsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 animate-slideIn">
       <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold">Export / Import</h2>
         <p className="text-sm text-slate-600">
           Keep your data safe by exporting regularly. Files stay on your device only.
         </p>
         <div className="flex flex-wrap gap-3">
-          <button className="rounded-full bg-blue-600 px-4 py-2 text-white" onClick={exportData}>
+          <button
+            className="rounded-full bg-blue-600 px-4 py-2 text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow"
+            onClick={exportData}
+          >
             Download backup JSON
           </button>
-          <label className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm">
+          <label className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow">
             Import JSON
             <input type="file" accept="application/json" className="hidden" ref={fileInput} onChange={handleImport} />
           </label>
@@ -74,7 +77,7 @@ export default function BackupsPage() {
                   <div className="text-slate-500">{backup.transactionsCount} transactions</div>
                 </div>
                 <button
-                  className="rounded-full bg-emerald-600 px-3 py-1 text-white"
+                  className="rounded-full bg-emerald-600 px-3 py-1 text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow"
                   onClick={() =>
                     restoreBackup(backup.settingsSnapshot, backup.transactionsSnapshot)
                   }

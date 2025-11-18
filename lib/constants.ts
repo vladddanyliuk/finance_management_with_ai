@@ -11,6 +11,7 @@ export const defaultSettings: UserSettings = {
   defaultMonthlyIncome: 600,
   recurringExpenses: [],
   oneTimeExpenses: [],
+  customMonths: [],
   autoBackupEnabled: true,
   autoBackupMaxEntries: 5,
   lastSelectedMonth: currentMonth,

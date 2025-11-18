@@ -327,7 +327,7 @@ export default function SettingsPage() {
               { id: crypto.randomUUID(), name: newCategory.name, icon: newCategory.icon || undefined },
             ],
           });
-          setNewCategory({ name: \"\", icon: \"\" });
+          setNewCategory({ name: "", icon: "" });
         }} className="mt-3 grid gap-3 md:grid-cols-4">
           <input
             placeholder="Name"

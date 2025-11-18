@@ -304,4 +304,9 @@ export const useMonthTransactions = (month: string) => {
   return useMemo(() => transactions.filter((t) => t.month === month), [transactions, month]);
 };
 
-export const getMonthFromDate = (date: string) => format(new Date(date), "yyyy-MM");
+export const getMonthFromDate = (date: string) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = `${d.getMonth() + 1}`.padStart(2, "0");
+  return `${year}-${month}`;
+};

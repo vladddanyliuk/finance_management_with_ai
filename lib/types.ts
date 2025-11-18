@@ -13,6 +13,7 @@ export interface Category {
   id: string;
   name: string;
   icon?: string; // emoji or short label
+}
 
 export type TransactionType = "income" | "expense";
 

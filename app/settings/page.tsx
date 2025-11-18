@@ -28,6 +28,8 @@ export default function SettingsPage() {
     name: "",
     amount: "",
     isMandatory: true,
+    startMonth: "",
+    endMonth: "",
   });
 
   const [editingRecurring, setEditingRecurring] = useState<RecurringExpense | null>(null);
@@ -69,8 +71,10 @@ export default function SettingsPage() {
       name: newRecurring.name,
       amount: Number(newRecurring.amount),
       isMandatory: newRecurring.isMandatory,
+      startMonth: newRecurring.startMonth || undefined,
+      endMonth: newRecurring.endMonth || undefined,
     });
-    setNewRecurring({ name: "", amount: "", isMandatory: true });
+    setNewRecurring({ name: "", amount: "", isMandatory: true, startMonth: "", endMonth: "" });
   };
 
   const handleAddOneTime = (event: React.FormEvent) => {
@@ -152,6 +156,20 @@ export default function SettingsPage() {
             onChange={(e) => setNewRecurring({ ...newRecurring, amount: e.target.value })}
             className="rounded-xl border px-3 py-2"
           />
+          <input
+            type="month"
+            placeholder="Start (YYYY-MM)"
+            value={newRecurring.startMonth}
+            onChange={(e) => setNewRecurring({ ...newRecurring, startMonth: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
+          <input
+            type="month"
+            placeholder="End (YYYY-MM)"
+            value={newRecurring.endMonth}
+            onChange={(e) => setNewRecurring({ ...newRecurring, endMonth: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
           <select
             className="rounded-xl border px-3 py-2"
             value={newRecurring.isMandatory ? "mandatory" : "optional"}
@@ -160,7 +178,7 @@ export default function SettingsPage() {
             <option value="mandatory">Mandatory</option>
             <option value="optional">Optional</option>
           </select>
-          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white">
+          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white md:col-span-2">
             Add
           </button>
         </form>
@@ -172,6 +190,9 @@ export default function SettingsPage() {
                   <div className="font-semibold">{expense.name}</div>
                   <div className="text-slate-500">
                     {expense.amount.toFixed(2)} {settings.currency} · {expense.isMandatory ? "Mandatory" : "Optional"}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {expense.startMonth ? `Start: ${expense.startMonth}` : "No start limit"} · {expense.endMonth ? `End: ${expense.endMonth}` : "No end limit"}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -210,6 +231,20 @@ export default function SettingsPage() {
               <option value="mandatory">Mandatory</option>
               <option value="optional">Optional</option>
             </select>
+            <input
+              className="w-full rounded-xl border px-3 py-2"
+              type="month"
+              value={editingRecurring.startMonth ?? ""}
+              onChange={(e) => setEditingRecurring({ ...editingRecurring, startMonth: e.target.value || undefined })}
+              placeholder="Start month (YYYY-MM)"
+            />
+            <input
+              className="w-full rounded-xl border px-3 py-2"
+              type="month"
+              value={editingRecurring.endMonth ?? ""}
+              onChange={(e) => setEditingRecurring({ ...editingRecurring, endMonth: e.target.value || undefined })}
+              placeholder="End month (YYYY-MM)"
+            />
             <div className="flex gap-2">
               <button
                 className="rounded-full bg-blue-600 px-4 py-2 text-white"

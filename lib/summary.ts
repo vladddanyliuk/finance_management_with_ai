@@ -1,12 +1,21 @@
 import { differenceInCalendarDays, endOfMonth, parseISO } from "date-fns";
 import { MonthSummary, Transaction, UserSettings } from "./types";
 
+const isRecurringActive = (expenseMonth: string | undefined, month: string, isStart = true) => {
+  if (!expenseMonth) return true;
+  return isStart ? month >= expenseMonth : month <= expenseMonth;
+};
+
 export const calculateMonthSummary = (
   month: string,
   settings: UserSettings,
   transactions: Transaction[]
 ): MonthSummary => {
-  const recurring = settings.recurringExpenses;
+  const recurring = settings.recurringExpenses.filter(
+    (r) =>
+      isRecurringActive(r.startMonth, month, true) &&
+      isRecurringActive(r.endMonth, month, false)
+  );
   const mandatoryRecurringTotal = recurring
     .filter((r) => r.isMandatory)
     .reduce((acc, r) => acc + r.amount, 0);

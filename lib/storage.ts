@@ -17,6 +17,7 @@ const parseState = (raw: string | null): FinanceDataState => {
       settings: { ...defaultState.settings, ...data.settings },
       transactions: data.transactions ?? [],
       autoBackups: data.autoBackups ?? [],
+      monthPlans: data.monthPlans ?? {},
     };
   } catch (error) {
     console.warn("Failed to parse local data", error);
@@ -40,6 +41,7 @@ export const buildBackupFile = (state: FinanceDataState): BackupFile => ({
   exportedAt: new Date().toISOString(),
   settings: state.settings,
   transactions: state.transactions,
+  monthPlans: state.monthPlans,
 });
 
 export const validateBackup = (data: BackupFile): boolean => {
@@ -47,7 +49,8 @@ export const validateBackup = (data: BackupFile): boolean => {
     data &&
       typeof data.version === "string" &&
       Array.isArray(data.transactions) &&
-      data.settings
+      data.settings &&
+      data.monthPlans
   );
 };
 
@@ -63,6 +66,7 @@ export const createAutoBackup = (
     transactionsCount: (updatedTransactions ?? state.transactions).length,
     settingsSnapshot: updatedSettings ?? state.settings,
     transactionsSnapshot: updatedTransactions ?? state.transactions,
+    monthPlansSnapshot: state.monthPlans,
   };
   return snapshot;
 };

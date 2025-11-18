@@ -15,6 +15,9 @@ import {
 interface FinanceDataContextValue extends FinanceDataState {
   hydrated: boolean;
   setSettings: (settings: Partial<UserSettings>) => void;
+  addCustomMonth: (month: string) => void;
+  deleteCustomMonth: (month: string) => void;
+  setMonthPlan: (month: string, plan: string) => void;
   addRecurringExpense: (expense: Omit<RecurringExpense, "id">) => void;
   updateRecurringExpense: (expense: RecurringExpense) => void;
   deleteRecurringExpense: (id: string) => void;
@@ -24,7 +27,7 @@ interface FinanceDataContextValue extends FinanceDataState {
   addTransaction: (input: Omit<Transaction, "id" | "createdAt" | "updatedAt">) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
-  restoreBackup: (settings: UserSettings, transactions: Transaction[]) => void;
+  restoreBackup: (settings: UserSettings, transactions: Transaction[], monthPlans?: Record<string, string>) => void;
 }
 
 const FinanceDataContext = createContext<FinanceDataContextValue | undefined>(undefined);
@@ -99,6 +102,56 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     },
     [updateSettingsInternal]
   );
+
+  const addCustomMonth = useCallback(
+    (month: string) => {
+      updateSettingsInternal((prev) => {
+        const customMonths = Array.from(new Set([...prev.customMonths, month])).sort();
+        return { ...prev, customMonths, lastSelectedMonth: month };
+      });
+    },
+    [updateSettingsInternal]
+  );
+
+  const deleteCustomMonth = useCallback(
+    (month: string) => {
+      setState((prev) => {
+        const customMonths = prev.settings.customMonths.filter((item) => item !== month).sort();
+        const nextTransactions = prev.transactions.filter((tx) => tx.month !== month);
+        const nextOneTime = prev.settings.oneTimeExpenses.filter((item) => item.month !== month);
+        const { [month]: _, ...restPlans } = prev.monthPlans;
+        const nextSettings = {
+          ...prev.settings,
+          customMonths,
+          oneTimeExpenses: nextOneTime,
+          lastSelectedMonth: customMonths[0] ?? "",
+        };
+        const next = { ...prev, settings: nextSettings, transactions: nextTransactions, monthPlans: restPlans };
+        persistState(next);
+        if (prev.settings.autoBackupEnabled) {
+          const entry = createAutoBackup(next, nextSettings, nextTransactions);
+          if (entry) {
+            next.autoBackups = applyAutoBackupLimit(
+              [entry, ...next.autoBackups],
+              nextSettings.autoBackupMaxEntries
+            );
+            persistState(next);
+          }
+        }
+        return { ...next };
+      });
+    },
+    []
+  );
+
+  const setMonthPlan = useCallback((month: string, plan: string) => {
+    setState((prev) => {
+      const monthPlans = { ...prev.monthPlans, [month]: plan };
+      const next = { ...prev, monthPlans };
+      persistState(next);
+      return { ...next };
+    });
+  }, []);
 
   const updateRecurringExpense = useCallback(
     (expense: RecurringExpense) => {
@@ -228,19 +281,23 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     });
   }, []);
 
-  const restoreBackup = useCallback((settings: UserSettings, transactions: Transaction[]) => {
+  const restoreBackup = useCallback((settings: UserSettings, transactions: Transaction[], monthPlans?: Record<string, string>) => {
     const restored: FinanceDataState = {
       settings,
       transactions,
+      monthPlans: monthPlans ?? state.monthPlans,
       autoBackups: state.autoBackups,
     };
     commitState(restored, true);
-  }, [commitState, state.autoBackups]);
+  }, [commitState, state.autoBackups, state.monthPlans]);
 
   const value = useMemo<FinanceDataContextValue>(() => ({
     ...state,
     hydrated,
     setSettings,
+    addCustomMonth,
+    deleteCustomMonth,
+    setMonthPlan,
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,
@@ -255,6 +312,9 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     state,
     hydrated,
     setSettings,
+    addCustomMonth,
+    deleteCustomMonth,
+    setMonthPlan,
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,

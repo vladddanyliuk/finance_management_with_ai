@@ -5,6 +5,8 @@ export interface RecurringExpense {
   name: string;
   amount: number;
   isMandatory: boolean;
+  startMonth?: string; // YYYY-MM inclusive
+  endMonth?: string; // YYYY-MM inclusive
 }
 
 export interface OneTimePlannedExpense {
@@ -57,6 +59,7 @@ export interface BackupFile {
   exportedAt: string;
   settings: UserSettings;
   transactions: Transaction[];
+  monthPlans: Record<string, string>;
 }
 
 export interface AutoBackupEntry {
@@ -65,10 +68,12 @@ export interface AutoBackupEntry {
   transactionsCount: number;
   settingsSnapshot: UserSettings;
   transactionsSnapshot: Transaction[];
+  monthPlansSnapshot: Record<string, string>;
 }
 
 export interface FinanceDataState {
   settings: UserSettings;
   transactions: Transaction[];
   autoBackups: AutoBackupEntry[];
+  monthPlans: Record<string, string>;
 }

@@ -6,12 +6,12 @@ import { buildBackupFile, validateBackup } from "../../lib/storage";
 import { BackupFile } from "../../lib/types";
 
 export default function BackupsPage() {
-  const { settings, transactions, autoBackups, restoreBackup } = useFinanceData();
+  const { settings, transactions, autoBackups, monthPlans, restoreBackup } = useFinanceData();
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   const exportData = () => {
-    const blob = new Blob([JSON.stringify(buildBackupFile({ settings, transactions, autoBackups }))], {
+    const blob = new Blob([JSON.stringify(buildBackupFile({ settings, transactions, autoBackups, monthPlans }))], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
@@ -34,7 +34,7 @@ export default function BackupsPage() {
       if (!confirm("Replace current data with this backup?")) {
         return;
       }
-      restoreBackup(data.settings, data.transactions);
+      restoreBackup(data.settings, data.transactions, data.monthPlans);
       setStatus("Backup restored successfully.");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Import failed";
@@ -79,7 +79,7 @@ export default function BackupsPage() {
                 <button
                   className="rounded-full bg-emerald-600 px-3 py-1 text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow"
                   onClick={() =>
-                    restoreBackup(backup.settingsSnapshot, backup.transactionsSnapshot)
+                    restoreBackup(backup.settingsSnapshot, backup.transactionsSnapshot, backup.monthPlansSnapshot)
                   }
                 >
                   Restore

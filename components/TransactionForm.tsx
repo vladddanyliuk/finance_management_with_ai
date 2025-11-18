@@ -6,10 +6,15 @@ import { useFinanceData, getMonthFromDate } from "../lib/useFinanceData";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
 
-export const TransactionForm = () => {
+interface TransactionFormProps {
+  targetMonth?: string;
+  title?: string;
+}
+
+export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: TransactionFormProps) => {
   const { addTransaction, settings } = useFinanceData();
   const [form, setForm] = useState({
-    date: today(),
+    date: targetMonth ? `${targetMonth}-01` : today(),
     type: "expense" as "income" | "expense",
     amount: "",
     category: "General",
@@ -23,7 +28,7 @@ export const TransactionForm = () => {
     setSubmitting(true);
     addTransaction({
       date: form.date,
-      month: getMonthFromDate(form.date),
+      month: targetMonth ?? getMonthFromDate(form.date),
       type: form.type,
       amount: Number(form.amount),
       category: form.category,
@@ -35,7 +40,7 @@ export const TransactionForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
-      <div className="text-base font-semibold text-slate-900">Quick transaction</div>
+      <div className="text-base font-semibold text-slate-900">{title}</div>
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm text-slate-600">
           Date

@@ -1,12 +1,10 @@
 "use client";
 
-import { format } from "date-fns";
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { defaultState } from "./constants";
 import { applyAutoBackupLimit, createAutoBackup, loadState, persistState } from "./storage";
 import {
   FinanceDataState,
-  OneTimePlannedExpense,
   RecurringExpense,
   Transaction,
   UserSettings,
@@ -21,9 +19,6 @@ interface FinanceDataContextValue extends FinanceDataState {
   addRecurringExpense: (expense: Omit<RecurringExpense, "id">) => void;
   updateRecurringExpense: (expense: RecurringExpense) => void;
   deleteRecurringExpense: (id: string) => void;
-  addOneTimeExpense: (expense: Omit<OneTimePlannedExpense, "id">) => void;
-  updateOneTimeExpense: (expense: OneTimePlannedExpense) => void;
-  deleteOneTimeExpense: (id: string) => void;
   addTransaction: (input: Omit<Transaction, "id" | "createdAt" | "updatedAt">) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
@@ -118,12 +113,10 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       setState((prev) => {
         const customMonths = prev.settings.customMonths.filter((item) => item !== month).sort();
         const nextTransactions = prev.transactions.filter((tx) => tx.month !== month);
-        const nextOneTime = prev.settings.oneTimeExpenses.filter((item) => item.month !== month);
         const { [month]: _, ...restPlans } = prev.monthPlans;
         const nextSettings = {
           ...prev.settings,
           customMonths,
-          oneTimeExpenses: nextOneTime,
           lastSelectedMonth: customMonths[0] ?? "",
         };
         const next = { ...prev, settings: nextSettings, transactions: nextTransactions, monthPlans: restPlans };
@@ -170,41 +163,6 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       updateSettingsInternal((prev) => ({
         ...prev,
         recurringExpenses: prev.recurringExpenses.filter((item) => item.id !== id),
-      }));
-    },
-    [updateSettingsInternal]
-  );
-
-  const addOneTimeExpense = useCallback(
-    (expense: Omit<OneTimePlannedExpense, "id">) => {
-      updateSettingsInternal((prev) => ({
-        ...prev,
-        oneTimeExpenses: [
-          ...prev.oneTimeExpenses,
-          { ...expense, id: crypto.randomUUID() },
-        ],
-      }));
-    },
-    [updateSettingsInternal]
-  );
-
-  const updateOneTimeExpense = useCallback(
-    (expense: OneTimePlannedExpense) => {
-      updateSettingsInternal((prev) => ({
-        ...prev,
-        oneTimeExpenses: prev.oneTimeExpenses.map((item) =>
-          item.id === expense.id ? expense : item
-        ),
-      }));
-    },
-    [updateSettingsInternal]
-  );
-
-  const deleteOneTimeExpense = useCallback(
-    (id: string) => {
-      updateSettingsInternal((prev) => ({
-        ...prev,
-        oneTimeExpenses: prev.oneTimeExpenses.filter((item) => item.id !== id),
       }));
     },
     [updateSettingsInternal]
@@ -282,8 +240,13 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
   }, []);
 
   const restoreBackup = useCallback((settings: UserSettings, transactions: Transaction[], monthPlans?: Record<string, string>) => {
+    const sanitizedSettings = {
+      ...defaultState.settings,
+      ...settings,
+      openAiApiKey: "",
+    };
     const restored: FinanceDataState = {
-      settings,
+      settings: sanitizedSettings,
       transactions,
       monthPlans: monthPlans ?? state.monthPlans,
       autoBackups: state.autoBackups,
@@ -301,9 +264,6 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,
-    addOneTimeExpense,
-    updateOneTimeExpense,
-    deleteOneTimeExpense,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -318,9 +278,6 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,
-    addOneTimeExpense,
-    updateOneTimeExpense,
-    deleteOneTimeExpense,
     addTransaction,
     updateTransaction,
     deleteTransaction,

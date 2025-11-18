@@ -98,7 +98,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Expenses</span>
-                  <span>{currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal + summary.plannedOneTimeTotal + summary.expenseTransactionsTotal, settings.currency)}</span>
+                  <span>{currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal + summary.expenseTransactionsTotal, settings.currency)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm">

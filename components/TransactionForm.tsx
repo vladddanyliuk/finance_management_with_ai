@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFinanceData, getMonthFromDate } from "../lib/useFinanceData";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
@@ -13,14 +13,21 @@ interface TransactionFormProps {
 
 export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: TransactionFormProps) => {
   const { addTransaction, settings } = useFinanceData();
+  const hasCategories = settings.categories.length > 0;
   const [form, setForm] = useState({
     date: targetMonth ? `${targetMonth}-01` : today(),
     type: "expense" as "income" | "expense",
     amount: "",
-    category: "General",
+    category: hasCategories ? settings.categories[0]?.name ?? "General" : "General",
     note: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (hasCategories && settings.categories.length > 0) {
+      setForm((prev) => ({ ...prev, category: settings.categories[0].name }));
+    }
+  }, [hasCategories, settings.categories]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -76,12 +83,26 @@ export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: Tr
       </label>
       <label className="text-sm text-slate-600">
         Category
-        <input
-          type="text"
-          className="mt-1 w-full rounded-xl border px-3 py-2"
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-        />
+        {hasCategories ? (
+          <select
+            className="mt-1 w-full rounded-xl border px-3 py-2"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          >
+            {settings.categories.map((cat) => (
+              <option key={cat.id} value={cat.name}>
+                {cat.icon ? `${cat.icon} ` : ""}{cat.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type="text"
+            className="mt-1 w-full rounded-xl border px-3 py-2"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+          />
+        )}
       </label>
       <label className="text-sm text-slate-600">
         Note

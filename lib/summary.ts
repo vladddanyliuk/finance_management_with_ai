@@ -22,10 +22,6 @@ export const calculateMonthSummary = (
   const optionalRecurringTotal = recurring
     .filter((r) => !r.isMandatory)
     .reduce((acc, r) => acc + r.amount, 0);
-  const plannedOneTimeTotal = settings.oneTimeExpenses
-    .filter((e) => e.month === month)
-    .reduce((acc, e) => acc + e.amount, 0);
-
   const monthTransactions = transactions.filter((t) => t.month === month);
   const incomeTransactionsTotal = monthTransactions
     .filter((t) => t.type === "income")
@@ -36,7 +32,7 @@ export const calculateMonthSummary = (
 
   const defaultIncome = settings.defaultMonthlyIncome;
   const plannedOutflows =
-    mandatoryRecurringTotal + optionalRecurringTotal + plannedOneTimeTotal;
+    mandatoryRecurringTotal + optionalRecurringTotal;
   const plannedRemaining = defaultIncome - plannedOutflows;
   const netTransactions = incomeTransactionsTotal - expenseTransactionsTotal;
   const remaining = plannedRemaining + netTransactions;
@@ -50,7 +46,6 @@ export const calculateMonthSummary = (
     month,
     mandatoryRecurringTotal,
     optionalRecurringTotal,
-    plannedOneTimeTotal,
     incomeTransactionsTotal,
     expenseTransactionsTotal,
     defaultIncome,

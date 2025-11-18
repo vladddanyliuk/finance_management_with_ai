@@ -2,7 +2,7 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { useFinanceData } from "../../lib/useFinanceData";
-import { OneTimePlannedExpense, RecurringExpense } from "../../lib/types";
+import { RecurringExpense } from "../../lib/types";
 
 export default function SettingsPage() {
   const {
@@ -11,9 +11,6 @@ export default function SettingsPage() {
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,
-    addOneTimeExpense,
-    updateOneTimeExpense,
-    deleteOneTimeExpense,
   } = useFinanceData();
 
   const [general, setGeneral] = useState({
@@ -34,12 +31,8 @@ export default function SettingsPage() {
 
   const [editingRecurring, setEditingRecurring] = useState<RecurringExpense | null>(null);
 
-  const [newOneTime, setNewOneTime] = useState({
-    name: "",
-    month: settings.lastSelectedMonth,
-    amount: "",
-  });
-  const [editingOneTime, setEditingOneTime] = useState<OneTimePlannedExpense | null>(null);
+  const [newBehavior, setNewBehavior] = useState({ description: "", amount: "" });
+  const [newCategory, setNewCategory] = useState({ name: "", icon: "" });
 
   useEffect(() => {
     startTransition(() => {
@@ -77,15 +70,20 @@ export default function SettingsPage() {
     setNewRecurring({ name: "", amount: "", isMandatory: true, startMonth: "", endMonth: "" });
   };
 
-  const handleAddOneTime = (event: React.FormEvent) => {
+  const handleAddBehavior = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!newOneTime.name || !newOneTime.amount) return;
-    addOneTimeExpense({
-      name: newOneTime.name,
-      amount: Number(newOneTime.amount),
-      month: newOneTime.month,
+    if (!newBehavior.description || !newBehavior.amount) return;
+    setSettings({
+      aiBehaviors: [
+        ...settings.aiBehaviors,
+        {
+          id: crypto.randomUUID(),
+          description: newBehavior.description,
+          monthlyAmount: Number(newBehavior.amount),
+        },
+      ],
     });
-    setNewOneTime({ ...newOneTime, name: "", amount: "" });
+    setNewBehavior({ description: "", amount: "" });
   };
 
   return (
@@ -265,26 +263,23 @@ export default function SettingsPage() {
         )}
       </section>
 
-      <section className="rounded-2xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">One-time planned expenses</h2>
-        <form onSubmit={handleAddOneTime} className="mt-3 grid gap-3 md:grid-cols-4">
+      <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold">AI context</h2>
+        <p className="text-sm text-slate-600">
+          Tell the AI what you like to spend on (e.g., smoking, donating, hobbies) and expected monthly amounts.
+        </p>
+        <form onSubmit={handleAddBehavior} className="mt-3 grid gap-3 md:grid-cols-4">
           <input
-            placeholder="Name"
-            value={newOneTime.name}
-            onChange={(e) => setNewOneTime({ ...newOneTime, name: e.target.value })}
+            placeholder="Behavior or priority"
+            value={newBehavior.description}
+            onChange={(e) => setNewBehavior({ ...newBehavior, description: e.target.value })}
             className="rounded-xl border px-3 py-2"
           />
           <input
-            placeholder="Month"
-            value={newOneTime.month}
-            onChange={(e) => setNewOneTime({ ...newOneTime, month: e.target.value })}
-            className="rounded-xl border px-3 py-2"
-          />
-          <input
-            placeholder="Amount"
+            placeholder="Expected monthly amount"
             type="number"
-            value={newOneTime.amount}
-            onChange={(e) => setNewOneTime({ ...newOneTime, amount: e.target.value })}
+            value={newBehavior.amount}
+            onChange={(e) => setNewBehavior({ ...newBehavior, amount: e.target.value })}
             className="rounded-xl border px-3 py-2"
           />
           <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white">
@@ -292,65 +287,89 @@ export default function SettingsPage() {
           </button>
         </form>
         <ul className="mt-4 space-y-2">
-          {settings.oneTimeExpenses.map((expense) => (
-            <li key={expense.id} className="rounded-xl border px-3 py-2">
-              <div className="flex items-center justify-between text-sm">
+          {settings.aiBehaviors.map((entry) => (
+            <li key={entry.id} className="rounded-xl border px-3 py-2 text-sm">
+              <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold">{expense.name}</div>
+                  <div className="font-semibold">{entry.description}</div>
                   <div className="text-slate-500">
-                    {expense.month} · {expense.amount.toFixed(2)} {settings.currency}
+                    {entry.monthlyAmount.toFixed(2)} {settings.currency} expected monthly
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button className="text-blue-600" onClick={() => setEditingOneTime(expense)}>
-                    Edit
-                  </button>
-                  <button className="text-rose-500" onClick={() => deleteOneTimeExpense(expense.id)}>
-                    Delete
-                  </button>
-                </div>
+                <button
+                  className="text-rose-500"
+                  onClick={() =>
+                    setSettings({
+                      aiBehaviors: settings.aiBehaviors.filter((item) => item.id !== entry.id),
+                    })
+                  }
+                >
+                  Delete
+                </button>
               </div>
             </li>
           ))}
+          {settings.aiBehaviors.length === 0 && (
+            <li className="text-sm text-slate-500">No behaviors added yet.</li>
+          )}
         </ul>
-        {editingOneTime && (
-          <div className="mt-4 space-y-3 rounded-xl bg-slate-50 p-3">
-            <h3 className="text-sm font-semibold">Edit planned expense</h3>
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              value={editingOneTime.name}
-              onChange={(e) => setEditingOneTime({ ...editingOneTime, name: e.target.value })}
-            />
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              value={editingOneTime.month}
-              onChange={(e) => setEditingOneTime({ ...editingOneTime, month: e.target.value })}
-            />
-            <input
-              className="w-full rounded-xl border px-3 py-2"
-              type="number"
-              value={editingOneTime.amount}
-              onChange={(e) => setEditingOneTime({ ...editingOneTime, amount: Number(e.target.value) })}
-            />
-            <div className="flex gap-2">
-              <button
-                className="rounded-full bg-blue-600 px-4 py-2 text-white"
-                onClick={() => {
-                  if (editingOneTime) {
-                    updateOneTimeExpense(editingOneTime);
-                    setEditingOneTime(null);
-                  }
-                }}
-              >
-                Save
-              </button>
-              <button className="rounded-full border px-4 py-2" onClick={() => setEditingOneTime(null)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
       </section>
+
+      <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold">Categories</h2>
+        <p className="text-sm text-slate-600">Create categories with an optional icon/emoji and use them when adding transactions.</p>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (!newCategory.name) return;
+          setSettings({
+            categories: [
+              ...settings.categories,
+              { id: crypto.randomUUID(), name: newCategory.name, icon: newCategory.icon || undefined },
+            ],
+          });
+          setNewCategory({ name: \"\", icon: \"\" });
+        }} className="mt-3 grid gap-3 md:grid-cols-4">
+          <input
+            placeholder="Name"
+            value={newCategory.name}
+            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
+          <input
+            placeholder="Icon (emoji)"
+            value={newCategory.icon}
+            onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
+          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white">
+            Add
+          </button>
+        </form>
+        <ul className="mt-4 space-y-2">
+          {settings.categories.map((category) => (
+            <li key={category.id} className="rounded-xl border px-3 py-2 text-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {category.icon && <span>{category.icon}</span>}
+                  <span className="font-semibold">{category.name}</span>
+                </div>
+                <button
+                  className="text-rose-500"
+                  onClick={() =>
+                    setSettings({
+                      categories: settings.categories.filter((item) => item.id !== category.id),
+                    })
+                  }
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+          {settings.categories.length === 0 && <li className="text-sm text-slate-500">No categories yet.</li>}
+        </ul>
+      </section>
+
     </div>
   );
 }

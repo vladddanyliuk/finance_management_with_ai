@@ -9,12 +9,10 @@ export interface RecurringExpense {
   endMonth?: string; // YYYY-MM inclusive
 }
 
-export interface OneTimePlannedExpense {
+export interface Category {
   id: string;
-  month: string; // YYYY-MM
   name: string;
-  amount: number;
-}
+  icon?: string; // emoji or short label
 
 export type TransactionType = "income" | "expense";
 
@@ -34,7 +32,8 @@ export interface UserSettings {
   currency: CurrencyCode;
   defaultMonthlyIncome: number;
   recurringExpenses: RecurringExpense[];
-  oneTimeExpenses: OneTimePlannedExpense[];
+  aiBehaviors: AiBehavior[];
+  categories: Category[];
   customMonths: string[];
   autoBackupEnabled: boolean;
   autoBackupMaxEntries: number;
@@ -42,11 +41,16 @@ export interface UserSettings {
   openAiApiKey?: string;
 }
 
+export interface AiBehavior {
+  id: string;
+  description: string;
+  monthlyAmount: number;
+}
+
 export interface MonthSummary {
   month: string;
   mandatoryRecurringTotal: number;
   optionalRecurringTotal: number;
-  plannedOneTimeTotal: number;
   incomeTransactionsTotal: number;
   expenseTransactionsTotal: number;
   defaultIncome: number;

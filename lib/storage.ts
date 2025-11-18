@@ -9,12 +9,18 @@ import {
   UserSettings,
 } from "./types";
 
+const sanitizeSettings = (settings: FinanceDataState["settings"]) => ({
+  ...defaultState.settings,
+  ...settings,
+  openAiApiKey: settings?.openAiApiKey ?? "",
+});
+
 const parseState = (raw: string | null): FinanceDataState => {
   if (!raw) return defaultState;
   try {
     const data = JSON.parse(raw) as FinanceDataState;
     return {
-      settings: { ...defaultState.settings, ...data.settings },
+      settings: sanitizeSettings(data.settings),
       transactions: data.transactions ?? [],
       autoBackups: data.autoBackups ?? [],
       monthPlans: data.monthPlans ?? {},
@@ -36,13 +42,16 @@ export const persistState = (state: FinanceDataState) => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 };
 
-export const buildBackupFile = (state: FinanceDataState): BackupFile => ({
-  version: BACKUP_VERSION,
-  exportedAt: new Date().toISOString(),
-  settings: state.settings,
-  transactions: state.transactions,
-  monthPlans: state.monthPlans,
-});
+export const buildBackupFile = (state: FinanceDataState): BackupFile => {
+  const { openAiApiKey: _omit, ...restSettings } = state.settings;
+  return {
+    version: BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    settings: restSettings,
+    transactions: state.transactions,
+    monthPlans: state.monthPlans,
+  };
+};
 
 export const validateBackup = (data: BackupFile): boolean => {
   return Boolean(

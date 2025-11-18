@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "OpenAI API key missing" }, { status: 400 });
   }
   const systemPrompt = `You are an optimistic but realistic financial coach building a monthly spending plan. Use the provided numbers to craft a markdown plan.`;
-  const prompt = `Month: ${month}\nCurrency: ${settings.currency}\nDefault income: ${summary.defaultIncome}\nRecurring mandatory: ${summary.mandatoryRecurringTotal}\nRecurring optional: ${summary.optionalRecurringTotal}\nPlanned one-time: ${summary.plannedOneTimeTotal}\nActual income transactions: ${summary.incomeTransactionsTotal}\nActual expense transactions: ${summary.expenseTransactionsTotal}\nRemaining: ${summary.remaining}\nDaily budget: ${summary.dailyBudget}\nRecurring expenses: ${settings.recurringExpenses
+  const behaviors = settings.aiBehaviors?.length
+    ? settings.aiBehaviors.map((b) => `- ${b.description}: ${b.monthlyAmount}`).join("\n")
+    : "None provided";
+  const prompt = `Month: ${month}\nCurrency: ${settings.currency}\nDefault income: ${summary.defaultIncome}\nRecurring mandatory: ${summary.mandatoryRecurringTotal}\nRecurring optional: ${summary.optionalRecurringTotal}\nActual income transactions: ${summary.incomeTransactionsTotal}\nActual expense transactions: ${summary.expenseTransactionsTotal}\nRemaining: ${summary.remaining}\nDaily budget: ${summary.dailyBudget}\nBehaviors/priorities: ${behaviors}\nRecurring expenses: ${settings.recurringExpenses
     .map((r) => `- ${r.name}: ${r.amount} (${r.isMandatory ? "mandatory" : "optional"})`)
     .join("\n")}\nSample transactions: ${transactionsSample
     ?.map((t) => `${t.date} ${t.category} ${t.type} ${t.amount}`)

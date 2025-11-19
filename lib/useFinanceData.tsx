@@ -243,7 +243,7 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     const sanitizedSettings = {
       ...defaultState.settings,
       ...settings,
-      openAiApiKey: "",
+      openAiApiKey: settings.openAiApiKey ?? "",
     };
     const restored: FinanceDataState = {
       settings: sanitizedSettings,

@@ -42,16 +42,13 @@ export const persistState = (state: FinanceDataState) => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 };
 
-export const buildBackupFile = (state: FinanceDataState): BackupFile => {
-  const { openAiApiKey: _omit, ...restSettings } = state.settings;
-  return {
-    version: BACKUP_VERSION,
-    exportedAt: new Date().toISOString(),
-    settings: restSettings,
-    transactions: state.transactions,
-    monthPlans: state.monthPlans,
-  };
-};
+export const buildBackupFile = (state: FinanceDataState): BackupFile => ({
+  version: BACKUP_VERSION,
+  exportedAt: new Date().toISOString(),
+  settings: state.settings,
+  transactions: state.transactions,
+  monthPlans: state.monthPlans,
+});
 
 export const validateBackup = (data: BackupFile): boolean => {
   return Boolean(

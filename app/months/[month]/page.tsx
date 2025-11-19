@@ -33,7 +33,23 @@ export default function MonthDetailPage() {
   const [aiPlan, setAiPlan] = useState("");
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiOptions, setAiOptions] = useState<Array<{ title: string; summary?: string; note?: string }>>([]);
+  const defaultOptions = [
+    {
+      title: "Budget Overhaul",
+      summary: "Revamp spending to fit your income better.",
+      note: "A friendly makeover for your money.",
+    },
+    {
+      title: "Expense Cut Challenge",
+      summary: "Trim unnecessary costs and boost savings.",
+      note: "Stretch those euros like a yoga pro.",
+    },
+    {
+      title: "Income Boost Plan",
+      summary: "Find ways to increase your income.",
+      note: "Because earning can be as fun as spending… sometimes!",
+    },
+  ];
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [selectedOptionDetails, setSelectedOptionDetails] = useState<string>("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -58,52 +74,6 @@ export default function MonthDetailPage() {
       ),
     [transactions, month, filterCategory]
   );
-
-  const generateOptions = async () => {
-    if (!month) return;
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setAiError("No internet, cannot generate AI plan");
-      return;
-    }
-    if (!settings.openAiApiKey) {
-      setAiError("Add your OpenAI API key in Settings to continue");
-      return;
-    }
-    setAiError(null);
-    setAiLoading(true);
-    try {
-      const response = await fetch("/api/month-plan", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          month,
-          settings,
-          summary,
-          apiKey: settings.openAiApiKey,
-          transactionsSample: transactions.filter((tx) => tx.month === month).slice(0, 10),
-          mode: "options",
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to generate plan");
-      }
-      const data = await response.json();
-      setAiOptions(data.options ?? []);
-      const first = data.options?.[0];
-      setSelectedOption(first?.title ?? "");
-      setSelectedOptionDetails(
-        first ? `${first.title} - ${first.summary ?? ""} ${first.note ?? ""}`.trim() : ""
-      );
-      setAiPlan("");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Unexpected error";
-      setAiError(message);
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const generateAiPlan = async () => {
     if (!month || !selectedOption) {
@@ -132,7 +102,6 @@ export default function MonthDetailPage() {
           summary,
           apiKey: settings.openAiApiKey,
           transactionsSample: transactions.filter((tx) => tx.month === month).slice(0, 10),
-          mode: "plan",
           selectedOption,
           selectedOptionDetails,
         }),
@@ -234,55 +203,41 @@ export default function MonthDetailPage() {
       <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">AI monthly plan</h2>
-          <div className="flex gap-2">
-            <button
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow disabled:opacity-60"
-              onClick={generateOptions}
-              disabled={aiLoading}
-            >
-              {aiLoading ? "Working…" : "Generate options"}
-            </button>
-            <button
-              className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow disabled:opacity-60"
-              onClick={generateAiPlan}
-              disabled={aiLoading || !selectedOption}
-            >
-              {aiLoading ? "Working…" : "Detailed plan"}
-            </button>
-          </div>
+          <button
+            className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow disabled:opacity-60"
+            onClick={generateAiPlan}
+            disabled={aiLoading || !selectedOption}
+          >
+            {aiLoading ? "Working…" : "Generate plan"}
+          </button>
         </div>
         {aiError && <p className="text-sm text-rose-500">{aiError}</p>}
-        {aiOptions.length === 0 && !aiPlan && !aiLoading && (
-          <p className="text-sm text-slate-500">Generate options to pick a spending style.</p>
-        )}
-        {aiOptions.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm text-slate-600">Pick one of the options below:</p>
-            <ul className="space-y-2">
-              {aiOptions.map((opt, idx) => (
-                <li key={opt.title ?? idx} className="rounded-xl border px-3 py-2">
-                  <label className="flex items-start gap-2 text-sm">
-                    <input
-                      type="radio"
-                      checked={selectedOption === opt.title}
-                      onChange={() => {
-                        setSelectedOption(opt.title);
-                        setSelectedOptionDetails(
-                          `${opt.title} - ${opt.summary ?? ""} ${opt.note ?? ""}`.trim()
-                        );
-                      }}
-                    />
-                    <div>
-                      <div className="font-semibold">{opt.title}</div>
-                      {opt.summary && <div className="text-slate-600">{opt.summary}</div>}
-                      {opt.note && <div className="text-xs text-slate-500">{opt.note}</div>}
-                    </div>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className="space-y-2">
+          <p className="text-sm text-slate-600">Pick one of the options below:</p>
+          <ul className="space-y-2">
+            {defaultOptions.map((opt, idx) => (
+              <li key={opt.title ?? idx} className="rounded-xl border px-3 py-2">
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="radio"
+                    checked={selectedOption === opt.title}
+                    onChange={() => {
+                      setSelectedOption(opt.title);
+                      setSelectedOptionDetails(
+                        `${opt.title} - ${opt.summary ?? ""} ${opt.note ?? ""}`.trim()
+                      );
+                    }}
+                  />
+                  <div>
+                    <div className="font-semibold">{opt.title}</div>
+                    {opt.summary && <div className="text-slate-600">{opt.summary}</div>}
+                    {opt.note && <div className="text-xs text-slate-500">{opt.note}</div>}
+                  </div>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
         {aiPlan && (
           <div className="space-y-2">
             <ReactMarkdown className="prose prose-sm max-w-none">

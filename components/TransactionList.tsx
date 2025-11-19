@@ -37,15 +37,26 @@ export const TransactionList = ({ transactions, showActions = false, onSelect }:
           </div>
           {tx.note && <p className="mt-2 text-sm text-slate-600">{tx.note}</p>}
           {showActions && (
-            <button
-              className="mt-3 text-sm text-rose-500"
-              onClick={(event) => {
-                event.stopPropagation();
-                deleteTransaction(tx.id);
-              }}
-            >
-              Delete
-            </button>
+            <div className="mt-3 flex gap-4 text-sm">
+              <button
+                className="text-blue-600"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onSelect?.(tx);
+                }}
+              >
+                Edit
+              </button>
+              <button
+                className="text-rose-500"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  deleteTransaction(tx.id);
+                }}
+              >
+                Delete
+              </button>
+            </div>
           )}
         </li>
       ))}

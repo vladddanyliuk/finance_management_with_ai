@@ -9,6 +9,7 @@ import { jsPDF } from "jspdf";
 import { Card } from "../../../components/Card";
 import { TransactionForm } from "../../../components/TransactionForm";
 import { TransactionList } from "../../../components/TransactionList";
+import { TransactionEditModal } from "../../../components/TransactionEditModal";
 import { calculateMonthSummary } from "../../../lib/summary";
 import { useFinanceData } from "../../../lib/useFinanceData";
 import { Transaction } from "../../../lib/types";
@@ -255,92 +256,15 @@ export default function MonthDetailPage() {
       </section>
 
       {editingTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md space-y-3 rounded-2xl bg-white p-4 shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Edit transaction</h3>
-              <button className="text-sm text-slate-500" onClick={() => setEditingTx(null)}>Close</button>
-            </div>
-            <label className="text-sm text-slate-600">
-              Date
-              <input
-                type="date"
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-                value={editingTx.date}
-                onChange={(e) => setEditingTx({ ...editingTx, date: e.target.value })}
-              />
-            </label>
-            <label className="text-sm text-slate-600">
-              Type
-              <select
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-                value={editingTx.type}
-                onChange={(e) =>
-                  setEditingTx({ ...editingTx, type: e.target.value as Transaction["type"] })
-                }
-              >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-              </select>
-            </label>
-            <label className="text-sm text-slate-600">
-              Amount
-              <input
-                type="number"
-                step="0.01"
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-                value={editingTx.amount}
-                onChange={(e) => setEditingTx({ ...editingTx, amount: Number(e.target.value) })}
-              />
-            </label>
-            <label className="text-sm text-slate-600">
-              Category
-              {settings.categories.length > 0 ? (
-                <select
-                  className="mt-1 w-full rounded-xl border px-3 py-2"
-                  value={editingTx.category}
-                  onChange={(e) => setEditingTx({ ...editingTx, category: e.target.value })}
-                >
-                  {settings.categories.map((cat) => (
-                    <option key={cat.id} value={cat.name}>
-                      {cat.icon ? `${cat.icon} ` : ""}{cat.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  className="mt-1 w-full rounded-xl border px-3 py-2"
-                  value={editingTx.category}
-                  onChange={(e) => setEditingTx({ ...editingTx, category: e.target.value })}
-                />
-              )}
-            </label>
-            <label className="text-sm text-slate-600">
-              Note
-              <textarea
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-                rows={2}
-                value={editingTx.note ?? ""}
-                onChange={(e) => setEditingTx({ ...editingTx, note: e.target.value })}
-              />
-            </label>
-            <div className="flex justify-end gap-2">
-              <button className="rounded-full border px-4 py-2 text-sm" onClick={() => setEditingTx(null)}>
-                Cancel
-              </button>
-              <button
-                className="rounded-full bg-blue-600 px-4 py-2 text-sm text-white"
-                onClick={() => {
-                  if (!editingTx) return;
-                  updateTransaction({ ...editingTx, month });
-                  setEditingTx(null);
-                }}
-              >
-                Save changes
-              </button>
-            </div>
-          </div>
-        </div>
+        <TransactionEditModal
+          transaction={editingTx}
+          categories={settings.categories}
+          onClose={() => setEditingTx(null)}
+          onSave={(tx) => {
+            updateTransaction({ ...tx, month });
+            setEditingTx(null);
+          }}
+        />
       )}
     </div>
   );

@@ -1,10 +1,16 @@
 "use client";
 
 import { format } from "date-fns";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFinanceData, getMonthFromDate } from "../lib/useFinanceData";
 
 const today = () => format(new Date(), "yyyy-MM-dd");
+const firstDayOf = (month: string) => `${month}-01`;
+const nextMonthFirstDay = () => {
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return format(next, "yyyy-MM-dd");
+};
 
 interface TransactionFormProps {
   targetMonth?: string;
@@ -14,8 +20,12 @@ interface TransactionFormProps {
 export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: TransactionFormProps) => {
   const { addTransaction, settings } = useFinanceData();
   const hasCategories = settings.categories.length > 0;
+  const defaultDate = useMemo(
+    () => (targetMonth ? firstDayOf(targetMonth) : nextMonthFirstDay()),
+    [targetMonth]
+  );
   const [form, setForm] = useState({
-    date: targetMonth ? `${targetMonth}-01` : today(),
+    date: defaultDate,
     type: "expense" as "income" | "expense",
     amount: "",
     category: hasCategories ? settings.categories[0]?.name ?? "General" : "General",
@@ -28,6 +38,10 @@ export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: Tr
       setForm((prev) => ({ ...prev, category: settings.categories[0].name }));
     }
   }, [hasCategories, settings.categories]);
+
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, date: defaultDate }));
+  }, [defaultDate]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -46,7 +60,7 @@ export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: Tr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm animate-slideIn">
       <div className="text-base font-semibold text-slate-900">{title}</div>
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm text-slate-600">

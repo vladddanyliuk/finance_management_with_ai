@@ -19,11 +19,14 @@ export const Card = ({ title, value, children, accent = "neutral" }: CardProps) 
   return (
     <div
       className={clsx(
-        "rounded-2xl border bg-white p-4 shadow-sm",
+        "rounded-2xl border bg-white/80 backdrop-blur shadow-card p-5 animate-fade",
         accentClasses[accent]
       )}
     >
-      <div className="text-sm font-medium text-slate-500">{title}</div>
+      <div className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+        <span role="img" aria-label="dot">•</span>
+        {title}
+      </div>
       {value !== undefined && (
         <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
       )}

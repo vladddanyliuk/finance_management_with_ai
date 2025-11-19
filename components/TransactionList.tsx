@@ -20,7 +20,7 @@ export const TransactionList = ({ transactions, showActions = false, onSelect }:
       {transactions.map((tx) => (
         <li
           key={tx.id}
-          className="rounded-2xl border bg-white p-4 shadow-sm"
+          className="rounded-2xl border bg-white/80 backdrop-blur p-4 shadow-card animate-fade"
           onClick={() => onSelect?.(tx)}
         >
           <div className="flex items-center justify-between">

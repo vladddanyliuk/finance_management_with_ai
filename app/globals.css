@@ -25,3 +25,11 @@ textarea {
   font-size: 16px;
   max-width: 100%;
 }
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur border border-white/60 shadow-lg;
+}
+
+.soft-button {
+  @apply rounded-2xl px-4 py-2 font-medium transition-all duration-200 shadow-lg hover:-translate-y-0.5 hover:shadow-xl;
+}

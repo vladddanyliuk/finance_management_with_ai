@@ -9,10 +9,24 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ["'Inter'", "system-ui", "sans-serif"],
+        body: ["'Inter'", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        soft: "0 10px 40px -12px rgba(59, 130, 246, 0.25)",
+        card: "0 12px 30px -16px rgba(15, 23, 42, 0.35)",
+      },
+      borderRadius: {
+        xl: "18px",
+        "2xl": "24px",
+      },
       colors: {
         brand: {
           primary: "#2563eb",
           muted: "#dbeafe",
+          gradientFrom: "#89f7fe",
+          gradientTo: "#66a6ff",
         },
       },
       keyframes: {

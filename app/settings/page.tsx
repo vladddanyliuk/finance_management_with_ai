@@ -87,7 +87,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 animate-slideIn">
       <form onSubmit={saveGeneral} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold">General</h2>
         <label className="block text-sm text-slate-600">

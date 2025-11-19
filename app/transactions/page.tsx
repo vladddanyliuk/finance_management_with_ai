@@ -1,8 +1,9 @@
 "use client";
 
 import { startTransition, useEffect, useMemo, useState } from "react";
-import { useFinanceData } from "../../lib/useFinanceData";
+import { useFinanceData, getMonthFromDate } from "../../lib/useFinanceData";
 import { TransactionList } from "../../components/TransactionList";
+import { TransactionEditModal } from "../../components/TransactionEditModal";
 import { Transaction } from "../../lib/types";
 
 export default function TransactionsPage() {
@@ -41,8 +42,8 @@ export default function TransactionsPage() {
   }, [latestMonth]);
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+    <div className="space-y-6 pb-12 animate-slideIn">
+      <div className="rounded-2xl border bg-white p-4 shadow-sm animate-slideIn">
         <h2 className="text-lg font-semibold">Filters</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <label className="text-sm text-slate-600">
@@ -83,7 +84,7 @@ export default function TransactionsPage() {
           </label>
         </div>
       </div>
-      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border bg-white p-4 shadow-sm animate-slideIn">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Transactions</h2>
         </div>
@@ -95,65 +96,15 @@ export default function TransactionsPage() {
         )}
       </div>
       {editing && (
-        <div className="rounded-2xl border bg-white p-4 shadow-sm">
-          <h3 className="text-lg font-semibold">Edit transaction</h3>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <label className="text-sm text-slate-600">
-              Date
-              <input
-                type="date"
-                value={editing.date}
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-                onChange={(e) => setEditing({ ...editing, date: e.target.value })}
-              />
-            </label>
-            <label className="text-sm text-slate-600">
-              Type
-              <select
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-                value={editing.type}
-                onChange={(e) => setEditing({ ...editing, type: e.target.value as "income" | "expense" })}
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </label>
-          </div>
-          <label className="mt-3 block text-sm text-slate-600">
-            Amount ({settings.currency})
-            <input
-              type="number"
-              className="mt-1 w-full rounded-xl border px-3 py-2"
-              value={editing.amount}
-              onChange={(e) => setEditing({ ...editing, amount: Number(e.target.value) })}
-            />
-          </label>
-          <label className="mt-3 block text-sm text-slate-600">
-            Category
-            <input
-              type="text"
-              className="mt-1 w-full rounded-xl border px-3 py-2"
-              value={editing.category}
-              onChange={(e) => setEditing({ ...editing, category: e.target.value })}
-            />
-          </label>
-          <label className="mt-3 block text-sm text-slate-600">
-            Note
-            <textarea
-              className="mt-1 w-full rounded-xl border px-3 py-2"
-              value={editing.note}
-              onChange={(e) => setEditing({ ...editing, note: e.target.value })}
-            />
-          </label>
-          <div className="mt-3 flex gap-2">
-            <button className="rounded-full bg-blue-600 px-4 py-2 text-white" onClick={saveEdit}>
-              Save
-            </button>
-            <button className="rounded-full border px-4 py-2" onClick={cancelEdit}>
-              Cancel
-            </button>
-          </div>
-        </div>
+        <TransactionEditModal
+          transaction={editing}
+          categories={settings.categories}
+          onClose={cancelEdit}
+          onSave={(tx) => {
+            updateTransaction({ ...tx, month: getMonthFromDate(tx.date) });
+            setEditing(null);
+          }}
+        />
       )}
     </div>
   );

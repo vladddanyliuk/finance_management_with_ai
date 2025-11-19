@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useEffect, useState } from "react";
+import { Cog6ToothIcon, ArrowPathIcon, WalletIcon, SparklesIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import { useFinanceData } from "../../lib/useFinanceData";
 import { RecurringExpense } from "../../lib/types";
 
@@ -88,8 +89,11 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-slideIn">
-      <form onSubmit={saveGeneral} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">General</h2>
+      <form onSubmit={saveGeneral} className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Cog6ToothIcon className="h-5 w-5 text-blue-600" />
+          General
+        </h2>
         <label className="block text-sm text-slate-600">
           Currency
           <input
@@ -133,13 +137,16 @@ export default function SettingsPage() {
             className="mt-1 w-full rounded-xl border px-3 py-2"
           />
         </label>
-        <button className="rounded-full bg-blue-600 px-4 py-2 text-white" type="submit">
+        <button className="rounded-full bg-gradient-to-r from-brand-gradientFrom to-brand-gradientTo px-4 py-2 text-white shadow-lg transition-all hover:-translate-y-0.5" type="submit">
           Save settings
         </button>
       </form>
 
-      <section className="rounded-2xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">Recurring expenses</h2>
+      <section className="rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <ArrowPathIcon className="h-5 w-5 text-emerald-600" />
+          Recurring expenses
+        </h2>
         <form onSubmit={handleAddRecurring} className="mt-3 grid gap-3 md:grid-cols-4">
           <input
             placeholder="Name"
@@ -176,7 +183,7 @@ export default function SettingsPage() {
             <option value="mandatory">Mandatory</option>
             <option value="optional">Optional</option>
           </select>
-          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white md:col-span-2">
+          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white md:col-span-2 shadow-lg transition-all hover:-translate-y-0.5">
             Add
           </button>
         </form>
@@ -263,8 +270,11 @@ export default function SettingsPage() {
         )}
       </section>
 
-      <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">AI context</h2>
+      <section className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <SparklesIcon className="h-5 w-5 text-purple-600" />
+          AI context
+        </h2>
         <p className="text-sm text-slate-600">
           Tell the AI what you like to spend on (e.g., smoking, donating, hobbies) and expected monthly amounts.
         </p>
@@ -282,7 +292,7 @@ export default function SettingsPage() {
             onChange={(e) => setNewBehavior({ ...newBehavior, amount: e.target.value })}
             className="rounded-xl border px-3 py-2"
           />
-          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white">
+          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white shadow-lg transition-all hover:-translate-y-0.5">
             Add
           </button>
         </form>
@@ -315,8 +325,11 @@ export default function SettingsPage() {
         </ul>
       </section>
 
-      <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">Categories</h2>
+      <section className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Squares2X2Icon className="h-5 w-5 text-orange-500" />
+          Categories
+        </h2>
         <p className="text-sm text-slate-600">Create categories with an optional icon/emoji and use them when adding transactions.</p>
         <form onSubmit={(e) => {
           e.preventDefault();
@@ -342,7 +355,7 @@ export default function SettingsPage() {
             onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
             className="rounded-xl border px-3 py-2"
           />
-          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white">
+          <button type="submit" className="rounded-full bg-slate-900 px-4 py-2 text-white shadow-lg transition-all hover:-translate-y-0.5">
             Add
           </button>
         </form>

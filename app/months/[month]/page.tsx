@@ -181,9 +181,11 @@ export default function MonthDetailPage() {
         </Card>
       </div>
 
-      <TransactionForm targetMonth={month} title="Add transaction for this month" />
+      <div className="rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
+        <TransactionForm targetMonth={month} title="Add transaction for this month" />
+      </div>
 
-      <section className="space-y-3">
+      <section className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Transactions ({month})</h2>
           <select
@@ -202,7 +204,7 @@ export default function MonthDetailPage() {
         <TransactionList transactions={monthTransactions} showActions onSelect={setEditingTx} />
       </section>
 
-      <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
+      <section className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">AI monthly plan</h2>
           <button

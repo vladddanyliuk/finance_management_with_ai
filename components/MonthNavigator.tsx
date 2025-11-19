@@ -37,7 +37,7 @@ export const MonthNavigator = ({
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border bg-white px-4 py-3 text-sm shadow-sm animate-slideIn">
+    <div className="space-y-3 rounded-2xl bg-white/80 backdrop-blur px-4 py-3 text-sm shadow-lg animate-slideIn">
       <div className="flex items-center justify-between gap-3">
         <button
           className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:shadow active:translate-y-0.5"

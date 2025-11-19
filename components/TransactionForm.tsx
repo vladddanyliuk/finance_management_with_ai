@@ -60,7 +60,7 @@ export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: Tr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm animate-slideIn">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-slideIn">
       <div className="text-base font-semibold text-slate-900">{title}</div>
       <div className="grid grid-cols-2 gap-3">
         <label className="text-sm text-slate-600">

@@ -46,7 +46,7 @@ export default function BackupsPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-slideIn">
-      <section className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm">
+      <section className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
         <h2 className="text-lg font-semibold">Export / Import</h2>
         <p className="text-sm text-slate-600">
           Keep your data safe by exporting regularly. Files stay on your device only.
@@ -65,7 +65,7 @@ export default function BackupsPage() {
         </div>
         {status && <p className="text-sm text-slate-600">{status}</p>}
       </section>
-      <section className="rounded-2xl border bg-white p-4 shadow-sm">
+      <section className="rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
         <h2 className="text-lg font-semibold">Auto-backups on this device</h2>
         {autoBackups.length === 0 && <p className="text-sm text-slate-500">No backups yet.</p>}
         <ul className="mt-3 space-y-3">

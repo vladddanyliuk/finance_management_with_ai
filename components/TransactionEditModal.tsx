@@ -18,8 +18,8 @@ export const TransactionEditModal = ({ transaction, categories, onSave, onClose 
   }, [transaction]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-md space-y-3 rounded-2xl bg-white p-4 shadow-xl animate-fade">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+      <div className="w-full max-w-md space-y-3 rounded-2xl bg-white/80 backdrop-blur shadow-lg p-4 animate-slideIn">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Edit transaction</h3>
           <button className="text-sm text-slate-500" onClick={onClose}>Close</button>

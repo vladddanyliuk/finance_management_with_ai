@@ -10,16 +10,16 @@ interface CardProps {
 }
 
 const accentClasses: Record<NonNullable<CardProps["accent"]>, string> = {
-  positive: "border-green-500",
-  negative: "border-rose-500",
-  neutral: "border-slate-200",
+  positive: "ring-1 ring-green-200",
+  negative: "ring-1 ring-rose-200",
+  neutral: "ring-1 ring-white/60",
 };
 
 export const Card = ({ title, value, children, accent = "neutral" }: CardProps) => {
   return (
     <div
       className={clsx(
-        "rounded-2xl border bg-white/80 backdrop-blur shadow-card p-5 animate-fade",
+        "rounded-2xl bg-white/80 backdrop-blur shadow-lg p-5 animate-fade",
         accentClasses[accent]
       )}
     >

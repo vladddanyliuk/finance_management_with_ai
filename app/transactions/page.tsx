@@ -1,5 +1,6 @@
 "use client";
 
+import { AdjustmentsHorizontalIcon, WalletIcon, TagIcon } from "@heroicons/react/24/outline";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { useFinanceData, getMonthFromDate } from "../../lib/useFinanceData";
 import { TransactionList } from "../../components/TransactionList";
@@ -43,8 +44,11 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-slideIn">
-      <div className="rounded-2xl border bg-white p-4 shadow-sm animate-slideIn">
-        <h2 className="text-lg font-semibold">Filters</h2>
+      <div className="rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-slideIn">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <AdjustmentsHorizontalIcon className="h-5 w-5 text-blue-600" />
+          Filters
+        </h2>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <label className="text-sm text-slate-600">
             Month
@@ -84,9 +88,12 @@ export default function TransactionsPage() {
           </label>
         </div>
       </div>
-      <div className="rounded-2xl border bg-white p-4 shadow-sm animate-slideIn">
+      <div className="rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-slideIn">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Transactions</h2>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <WalletIcon className="h-5 w-5 text-emerald-600" />
+            Transactions
+          </h2>
         </div>
         <TransactionList transactions={filtered} showActions onSelect={startEdit} />
         {filtered.length > 0 && (

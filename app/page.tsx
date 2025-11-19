@@ -43,7 +43,7 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      <form onSubmit={handleAddMonth} className="flex flex-wrap items-end gap-3 rounded-2xl border bg-white px-4 py-3 shadow-sm">
+      <form onSubmit={handleAddMonth} className="flex flex-wrap items-end gap-3 rounded-2xl bg-white/80 backdrop-blur px-4 py-3 shadow-lg animate-fade">
         <div>
           <label className="block text-xs font-semibold text-slate-600">Create month</label>
           <input
@@ -72,7 +72,7 @@ export default function DashboardPage() {
         {monthSummaries.map(({ month, summary }) => {
           const positive = summary.remaining >= 0;
           return (
-            <div key={month} className="space-y-3 rounded-2xl border bg-white p-4 shadow-sm animate-fade">
+            <div key={month} className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm font-semibold text-slate-900">
@@ -91,7 +91,7 @@ export default function DashboardPage() {
                   Delete
                 </button>
               </div>
-              <div className="rounded-xl bg-slate-50 px-3 py-2 text-sm">
+              <div className="rounded-xl bg-slate-50/70 px-3 py-2 text-sm">
                 <div className="flex justify-between">
                   <span>Income</span>
                   <span>{currencyFormat(summary.defaultIncome + summary.incomeTransactionsTotal, settings.currency)}</span>

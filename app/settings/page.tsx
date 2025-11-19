@@ -324,6 +324,7 @@ export default function SettingsPage() {
           setSettings({
             categories: [
               ...settings.categories,
+
               { id: crypto.randomUUID(), name: newCategory.name, icon: newCategory.icon || undefined },
             ],
           });

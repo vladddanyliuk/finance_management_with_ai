@@ -35,6 +35,7 @@ export default function MonthDetailPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiOptions, setAiOptions] = useState<Array<{ title: string; summary?: string; note?: string }>>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
+  const [selectedOptionDetails, setSelectedOptionDetails] = useState<string>("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
@@ -90,7 +91,11 @@ export default function MonthDetailPage() {
       }
       const data = await response.json();
       setAiOptions(data.options ?? []);
-      setSelectedOption(data.options?.[0]?.title ?? "");
+      const first = data.options?.[0];
+      setSelectedOption(first?.title ?? "");
+      setSelectedOptionDetails(
+        first ? `${first.title} - ${first.summary ?? ""} ${first.note ?? ""}`.trim() : ""
+      );
       setAiPlan("");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Unexpected error";
@@ -129,6 +134,7 @@ export default function MonthDetailPage() {
           transactionsSample: transactions.filter((tx) => tx.month === month).slice(0, 10),
           mode: "plan",
           selectedOption,
+          selectedOptionDetails,
         }),
       });
       if (!response.ok) {
@@ -246,6 +252,9 @@ export default function MonthDetailPage() {
           </div>
         </div>
         {aiError && <p className="text-sm text-rose-500">{aiError}</p>}
+        {aiOptions.length === 0 && !aiPlan && !aiLoading && (
+          <p className="text-sm text-slate-500">Generate options to pick a spending style.</p>
+        )}
         {aiOptions.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm text-slate-600">Pick one of the options below:</p>
@@ -256,7 +265,12 @@ export default function MonthDetailPage() {
                     <input
                       type="radio"
                       checked={selectedOption === opt.title}
-                      onChange={() => setSelectedOption(opt.title)}
+                      onChange={() => {
+                        setSelectedOption(opt.title);
+                        setSelectedOptionDetails(
+                          `${opt.title} - ${opt.summary ?? ""} ${opt.note ?? ""}`.trim()
+                        );
+                      }}
                     />
                     <div>
                       <div className="font-semibold">{opt.title}</div>

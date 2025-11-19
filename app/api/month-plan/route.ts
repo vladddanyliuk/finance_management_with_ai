@@ -10,11 +10,22 @@ interface MonthPlanRequestBody {
   apiKey?: string;
   mode?: "options" | "plan";
   selectedOption?: string;
+  selectedOptionDetails?: string;
 }
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as MonthPlanRequestBody;
-  const { month, settings, summary, transactionsSample, language, apiKey, mode = "plan", selectedOption } = body;
+  const {
+    month,
+    settings,
+    summary,
+    transactionsSample,
+    language,
+    apiKey,
+    mode = "plan",
+    selectedOption,
+    selectedOptionDetails,
+  } = body;
   const key = apiKey || process.env.OPENAI_API_KEY;
   if (!key) {
     return NextResponse.json({ error: "OpenAI API key missing" }, { status: 400 });
@@ -36,14 +47,14 @@ export async function POST(req: NextRequest) {
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `${prompt}\nLanguage: ${language || "English"}.\nProvide exactly 3 spending plan options in JSON: {"options":[{"title":"string","summary":"one sentence","note":"short fun quip"}]}. Keep it short and fun.`,
+              content: `${prompt}\nLanguage: ${language || "English"}.\nReturn ONLY valid JSON (no code fences, no prose) shaped exactly as {"options":[{"title":"string","summary":"one sentence","note":"short fun quip"}]} with 3 options. Keep titles concise and distinct.`,
             },
           ]
         : [
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `${prompt}\nLanguage: ${language || "English"}.\nUser selected option: ${selectedOption ?? "not provided"}.\nCreate a detailed markdown spending plan with sections for overview, fixed costs, flexible spending, a table of weekly limits, and playful tips. Keep humor friendly.`,
+              content: `${prompt}\nLanguage: ${language || "English"}.\nUser selected option: ${selectedOption ?? "not provided"}.\nOption details: ${selectedOptionDetails ?? "n/a"}.\nCreate a detailed markdown spending plan with sections for overview, fixed costs, flexible spending, a table of weekly limits, and playful tips. Keep humor friendly.`,
             },
           ];
 
@@ -67,17 +78,35 @@ export async function POST(req: NextRequest) {
     const content = data.choices?.[0]?.message?.content ?? "";
 
     if (mode === "options") {
+      const cleanContent = content
+        .replace(/^```[a-zA-Z]*\s*/m, "")
+        .replace(/```$/m, "")
+        .trim();
       try {
-        const parsed = JSON.parse(content);
-        return NextResponse.json({ options: parsed.options ?? [] });
+        const parsed = JSON.parse(cleanContent);
+        const options = Array.isArray(parsed)
+          ? parsed
+          : Array.isArray(parsed.options)
+            ? parsed.options
+            : [];
+        return NextResponse.json({ options });
       } catch (error) {
-        // fallback: attempt to split lines
-        const fallbackOptions = content
-          .split("\n")
-          .filter((line: string) => line.trim())
-          .slice(0, 3)
-          .map((line: string) => ({ title: line, summary: line, note: "" }));
-        return NextResponse.json({ options: fallbackOptions });
+        // fallback: attempt to extract JSON-like content between braces
+        const braceMatch = content.match(/{[\s\S]*}/);
+        if (braceMatch) {
+          try {
+            const parsed = JSON.parse(braceMatch[0]);
+            const options = Array.isArray(parsed)
+              ? parsed
+              : Array.isArray(parsed.options)
+                ? parsed.options
+                : [];
+            return NextResponse.json({ options });
+          } catch {
+            /* ignore */
+          }
+        }
+        return NextResponse.json({ options: [] });
       }
     }
 

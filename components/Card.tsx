@@ -7,6 +7,7 @@ interface CardProps {
   value?: string | number;
   children?: React.ReactNode;
   accent?: "positive" | "negative" | "neutral";
+  icon?: React.ReactNode;
 }
 
 const accentClasses: Record<NonNullable<CardProps["accent"]>, string> = {
@@ -15,7 +16,7 @@ const accentClasses: Record<NonNullable<CardProps["accent"]>, string> = {
   neutral: "ring-1 ring-white/60",
 };
 
-export const Card = ({ title, value, children, accent = "neutral" }: CardProps) => {
+export const Card = ({ title, value, children, accent = "neutral", icon }: CardProps) => {
   return (
     <div
       className={clsx(
@@ -24,7 +25,7 @@ export const Card = ({ title, value, children, accent = "neutral" }: CardProps) 
       )}
     >
       <div className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-        <span role="img" aria-label="dot">•</span>
+        {icon ?? <span aria-hidden>•</span>}
         {title}
       </div>
       {value !== undefined && (

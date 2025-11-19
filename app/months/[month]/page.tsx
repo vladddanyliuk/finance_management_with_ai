@@ -6,6 +6,13 @@ import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { jsPDF } from "jspdf";
+import {
+  CurrencyEuroIcon,
+  BanknotesIcon,
+  ChartBarIcon,
+  ClockIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { Card } from "../../../components/Card";
 import { TransactionForm } from "../../../components/TransactionForm";
 import { TransactionList } from "../../../components/TransactionList";
@@ -156,7 +163,7 @@ export default function MonthDetailPage() {
           <h1 className="text-2xl font-semibold mt-1">{month}</h1>
         </div>
         <button
-          className="text-sm text-rose-500"
+          className="text-sm text-rose-500 flex items-center gap-1"
           onClick={() => {
             if (confirm(`Delete ${month} and its data?`)) {
               deleteCustomMonth(month);
@@ -164,19 +171,32 @@ export default function MonthDetailPage() {
             }
           }}
         >
-          Delete month
+          <TrashIcon className="h-4 w-4" /> Delete month
         </button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Default income" value={currencyFormat(summary.defaultIncome, settings.currency)} />
-        <Card title="Fixed costs" value={currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal, settings.currency)} />
         <Card
+          icon={<CurrencyEuroIcon className="h-5 w-5 text-blue-600" />}
+          title="Default income"
+          value={currencyFormat(summary.defaultIncome, settings.currency)}
+        />
+        <Card
+          icon={<BanknotesIcon className="h-5 w-5 text-amber-500" />}
+          title="Fixed costs"
+          value={currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal, settings.currency)}
+        />
+        <Card
+          icon={<ChartBarIcon className="h-5 w-5 text-emerald-600" />}
           title="Remaining this month"
           value={currencyFormat(summary.remaining, settings.currency)}
           accent={positive ? "positive" : "negative"}
         />
-        <Card title="Daily budget" value={currencyFormat(summary.dailyBudget, settings.currency)}>
+        <Card
+          icon={<ClockIcon className="h-5 w-5 text-purple-500" />}
+          title="Daily budget"
+          value={currencyFormat(summary.dailyBudget, settings.currency)}
+        >
           You can spend about {currencyFormat(summary.dailyBudget, settings.currency)} per day.
         </Card>
       </div>

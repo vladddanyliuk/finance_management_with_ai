@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { useMemo, useState } from "react";
+import { CalendarIcon, CurrencyEuroIcon, BanknotesIcon, ChartBarIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { calculateMonthSummary } from "../lib/summary";
 import { useFinanceData } from "../lib/useFinanceData";
 
@@ -75,34 +76,41 @@ export default function DashboardPage() {
             <div key={month} className="space-y-3 rounded-2xl bg-white/80 backdrop-blur p-4 shadow-lg animate-fade">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">
+                  <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5 text-blue-600" />
                     {format(parseISO(`${month}-01`), "MMMM yyyy")}
                   </div>
                   <div className="text-xs text-slate-500">{month}</div>
                 </div>
                 <button
-                  className="text-xs text-rose-500"
+                  className="text-xs text-rose-500 flex items-center gap-1"
                   onClick={() => {
                     if (confirm(`Delete ${month} and its data?`)) {
                       deleteCustomMonth(month);
                     }
                   }}
                 >
-                  Delete
+                  <TrashIcon className="h-4 w-4" /> Delete
                 </button>
               </div>
               <div className="rounded-xl bg-slate-50/70 px-3 py-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Income</span>
+                  <span className="flex items-center gap-1">
+                    <CurrencyEuroIcon className="h-4 w-4 text-emerald-600" /> Income
+                  </span>
                   <span>{currencyFormat(summary.defaultIncome + summary.incomeTransactionsTotal, settings.currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Expenses</span>
+                  <span className="flex items-center gap-1">
+                    <BanknotesIcon className="h-4 w-4 text-rose-500" /> Expenses
+                  </span>
                   <span>{currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal + summary.expenseTransactionsTotal, settings.currency)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm">
-                <span>End of month</span>
+                <span className="flex items-center gap-1">
+                  <ChartBarIcon className="h-4 w-4 text-indigo-600" /> End of month
+                </span>
                 <span className={positive ? "text-emerald-600" : "text-rose-600"}>
                   {positive ? "+" : "-"}{currencyFormat(Math.abs(summary.remaining), settings.currency)}
                 </span>

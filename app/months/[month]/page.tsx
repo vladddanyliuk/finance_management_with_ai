@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { jsPDF } from "jspdf";
 import { Card } from "../../../components/Card";
 import { TransactionForm } from "../../../components/TransactionForm";
@@ -240,7 +241,7 @@ export default function MonthDetailPage() {
         </div>
         {aiPlan && (
           <div className="space-y-2">
-            <ReactMarkdown className="prose prose-sm max-w-none">
+            <ReactMarkdown className="prose prose-sm max-w-none" remarkPlugins={[remarkGfm]}>
               {aiPlan}
             </ReactMarkdown>
             <button

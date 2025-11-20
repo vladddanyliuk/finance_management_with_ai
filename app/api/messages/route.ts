@@ -57,9 +57,9 @@ export async function POST(req: NextRequest) {
   const daysInMonth = Math.max(1, differenceInCalendarDays(monthEnd, monthStart) + 1);
   const todayInMonth = Math.min(daysInMonth, Math.max(1, now.getDate()));
   const daysLeft = Math.max(0, differenceInCalendarDays(monthEnd, now));
-  const averageDailySpend = totalExpense / Math.max(1, todayInMonth);
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((acc, t) => acc + t.amount, 0);
   const totalExpense = transactions.filter((t) => t.type === "expense").reduce((acc, t) => acc + t.amount, 0);
+  const averageDailySpend = totalExpense / Math.max(1, todayInMonth);
 
   const prompt = `Create a short weekly recap for personal finance with light coaching, but be firm when money is tight.
 Today: ${now.toISOString()}

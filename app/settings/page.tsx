@@ -1,9 +1,10 @@
 "use client";
 
 import { startTransition, useEffect, useState } from "react";
-import { Cog6ToothIcon, ArrowPathIcon, WalletIcon, SparklesIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
+import { Cog6ToothIcon, ArrowPathIcon, SparklesIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import { useFinanceData } from "../../lib/useFinanceData";
 import { RecurringExpense } from "../../lib/types";
+import { generateId } from "../../lib/id";
 
 export default function SettingsPage() {
   const {
@@ -78,7 +79,7 @@ export default function SettingsPage() {
       aiBehaviors: [
         ...settings.aiBehaviors,
         {
-          id: crypto.randomUUID(),
+          id: generateId(),
           description: newBehavior.description,
           monthlyAmount: Number(newBehavior.amount),
         },
@@ -137,7 +138,7 @@ export default function SettingsPage() {
             className="mt-1 w-full rounded-xl border px-3 py-2"
           />
         </label>
-        <button className="rounded-full bg-gradient-to-r from-brand-gradientFrom to-brand-gradientTo px-4 py-2 text-white shadow-lg transition-all hover:-translate-y-0.5" type="submit">
+        <button className="rounded-full bg-blue-600 px-4 py-2 text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow" type="submit">
           Save settings
         </button>
       </form>
@@ -239,6 +240,7 @@ export default function SettingsPage() {
             <input
               className="w-full rounded-xl border px-3 py-2"
               type="month"
+              style={{ width: "-webkit-fill-available", height: "-webkit-fit-content" }}
               value={editingRecurring.startMonth ?? ""}
               onChange={(e) => setEditingRecurring({ ...editingRecurring, startMonth: e.target.value || undefined })}
               placeholder="Start month (YYYY-MM)"
@@ -246,6 +248,7 @@ export default function SettingsPage() {
             <input
               className="w-full rounded-xl border px-3 py-2"
               type="month"
+              style={{ width: "-webkit-fill-available", height: "-webkit-fit-content" }}
               value={editingRecurring.endMonth ?? ""}
               onChange={(e) => setEditingRecurring({ ...editingRecurring, endMonth: e.target.value || undefined })}
               placeholder="End month (YYYY-MM)"
@@ -338,7 +341,7 @@ export default function SettingsPage() {
             categories: [
               ...settings.categories,
 
-              { id: crypto.randomUUID(), name: newCategory.name, icon: newCategory.icon || undefined },
+              { id: generateId(), name: newCategory.name, icon: newCategory.icon || undefined },
             ],
           });
           setNewCategory({ name: "", icon: "" });

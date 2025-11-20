@@ -12,6 +12,8 @@ import {
   ChartBarIcon,
   ClockIcon,
   TrashIcon,
+  ArrowLeftIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { Card } from "../../../components/Card";
 import { TransactionForm } from "../../../components/TransactionForm";
@@ -64,12 +66,24 @@ export default function MonthDetailPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
+  const seasonColor = useMemo(() => {
+    if (!month) return "text-blue-600";
+    const [, mm] = month.split("-");
+    const monthNum = Number(mm);
+    if (Number.isNaN(monthNum)) return "text-blue-600";
+    if (monthNum === 12 || monthNum === 1 || monthNum === 2) return "text-sky-500"; // winter
+    if (monthNum >= 3 && monthNum <= 5) return "text-green-600"; // spring
+    if (monthNum >= 6 && monthNum <= 8) return "text-amber-500"; // summer
+    if (monthNum >= 9 && monthNum <= 11) return "text-orange-500"; // autumn
+    return "text-blue-600";
+  }, [month]);
+
   useEffect(() => {
-    if (month) {
-      setSettings({ lastSelectedMonth: month });
-      setAiPlan(monthPlans[month] ?? "");
-    }
-  }, [month, monthPlans, setSettings]);
+    // Wait for hydration before persisting settings to avoid overwriting stored data.
+    if (!hydrated || !month) return;
+    setSettings({ lastSelectedMonth: month });
+    setAiPlan(monthPlans[month] ?? "");
+  }, [hydrated, month, monthPlans, setSettings]);
 
   const summary = useMemo(() => {
     if (!month) return null;
@@ -155,45 +169,55 @@ export default function MonthDetailPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-slideIn">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/" className="text-sm text-blue-600 underline">
-            ← Back to dashboard
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-3 py-1.5 text-sm text-blue-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>Back to dashboard</span>
           </Link>
-          <h1 className="text-2xl font-semibold mt-1">{month}</h1>
+          <button
+            className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow"
+            onClick={() => {
+              if (confirm(`Delete ${month} and its data?`)) {
+                deleteCustomMonth(month);
+                router.push("/");
+              }
+            }}
+          >
+            <TrashIcon className="h-4 w-4" />
+            <span>Delete month</span>
+          </button>
         </div>
-        <button
-          className="text-sm text-rose-500 flex items-center gap-1"
-          onClick={() => {
-            if (confirm(`Delete ${month} and its data?`)) {
-              deleteCustomMonth(month);
-              router.push("/");
-            }
-          }}
-        >
-          <TrashIcon className="h-4 w-4" /> Delete month
-        </button>
+        <h1 className="text-2xl font-semibold mt-3 text-center">
+          <span className="inline-flex items-center justify-center gap-2">
+            <CalendarIcon className={`h-6 w-6 ${seasonColor}`} />
+            {month}
+          </span>
+        </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card
-          icon={<CurrencyEuroIcon className="h-5 w-5 text-blue-600" />}
+          icon={<CurrencyEuroIcon className="h-5 w-5 text-emerald-600" />}
           title="Default income"
           value={currencyFormat(summary.defaultIncome, settings.currency)}
         />
         <Card
-          icon={<BanknotesIcon className="h-5 w-5 text-amber-500" />}
+          icon={<BanknotesIcon className="h-5 w-5 text-rose-500" />}
           title="Fixed costs"
           value={currencyFormat(summary.mandatoryRecurringTotal + summary.optionalRecurringTotal, settings.currency)}
         />
         <Card
-          icon={<ChartBarIcon className="h-5 w-5 text-emerald-600" />}
+          icon={<ChartBarIcon className="h-5 w-5 text-indigo-600" />}
           title="Remaining this month"
           value={currencyFormat(summary.remaining, settings.currency)}
           accent={positive ? "positive" : "negative"}
         />
         <Card
-          icon={<ClockIcon className="h-5 w-5 text-purple-500" />}
+          icon={<ClockIcon className="h-5 w-5 text-black-500" />}
           title="Daily budget"
           value={currencyFormat(summary.dailyBudget, settings.currency)}
         >

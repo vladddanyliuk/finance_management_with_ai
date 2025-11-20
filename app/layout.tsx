@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "./providers";
-import Link from "next/link";
+import { HeaderNav, type HeaderNavLink } from "../components/HeaderNav";
+import { NavigationHider } from "../components/NavigationHider";
 
 export const metadata: Metadata = {
   title: "Pocket Pilot",
@@ -18,11 +19,11 @@ export const viewport = {
   themeColor: "#2563eb",
 };
 
-const links = [
-  { href: "/", label: "Dashboard" },
-  { href: "/transactions", label: "Transactions" },
-  { href: "/settings", label: "Settings" },
-  { href: "/backups", label: "Backups" },
+const links: HeaderNavLink[] = [
+  { href: "/", label: "Dashboard", icon: "dashboard" },
+  { href: "/transactions", label: "Transactions", icon: "transactions" },
+  { href: "/settings", label: "Settings", icon: "settings" },
+  { href: "/backups", label: "Backups", icon: "backups" },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,17 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <p className="text-sm text-slate-500">
                 Plan your month, keep spending on track, even offline.
               </p>
-              <nav className="flex flex-wrap gap-2">
-                {links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-sm text-slate-700"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
+              <NavigationHider>
+                <HeaderNav links={links} />
+              </NavigationHider>
             </header>
             <main>{children}</main>
           </div>

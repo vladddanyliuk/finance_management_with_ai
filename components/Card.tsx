@@ -13,7 +13,7 @@ interface CardProps {
 const accentClasses: Record<NonNullable<CardProps["accent"]>, string> = {
   positive: "ring-1 ring-green-200",
   negative: "ring-1 ring-rose-200",
-  neutral: "ring-1 ring-white/60",
+  neutral: "ring-1 ring-white/80",
 };
 
 export const Card = ({ title, value, children, accent = "neutral", icon }: CardProps) => {

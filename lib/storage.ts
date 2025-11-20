@@ -1,6 +1,7 @@
 "use client";
 
 import { BACKUP_VERSION, STORAGE_KEY, defaultState } from "./constants";
+import { generateId } from "./id";
 import {
   AutoBackupEntry,
   BackupFile,
@@ -67,7 +68,7 @@ export const createAutoBackup = (
 ): AutoBackupEntry | null => {
   if (!state.settings.autoBackupEnabled) return null;
   const snapshot: AutoBackupEntry = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     createdAt: new Date().toISOString(),
     transactionsCount: (updatedTransactions ?? state.transactions).length,
     settingsSnapshot: updatedSettings ?? state.settings,

@@ -1,10 +1,10 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import { useFinanceData, getMonthFromDate } from "../lib/useFinanceData";
-
-const today = () => format(new Date(), "yyyy-MM-dd");
 const firstDayOf = (month: string) => `${month}-01`;
 const nextMonthFirstDay = () => {
   const now = new Date();
@@ -68,6 +68,7 @@ export const TransactionForm = ({ targetMonth, title = "Quick transaction" }: Tr
           <input
             type="date"
             className="mt-1 w-full rounded-xl border px-3 py-2"
+            style={{ width: "-webkit-fill-available", height: "-webkit-fit-content" }}
             value={form.date}
             onChange={(e) => setForm({ ...form, date: e.target.value })}
           />

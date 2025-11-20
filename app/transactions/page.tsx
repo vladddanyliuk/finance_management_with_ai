@@ -1,6 +1,6 @@
 "use client";
 
-import { AdjustmentsHorizontalIcon, WalletIcon, TagIcon } from "@heroicons/react/24/outline";
+import { AdjustmentsHorizontalIcon, WalletIcon } from "@heroicons/react/24/outline";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { useFinanceData, getMonthFromDate } from "../../lib/useFinanceData";
 import { TransactionList } from "../../components/TransactionList";
@@ -30,11 +30,6 @@ export default function TransactionsPage() {
 
   const startEdit = (tx: Transaction) => setEditing(tx);
   const cancelEdit = () => setEditing(null);
-  const saveEdit = () => {
-    if (!editing) return;
-    updateTransaction(editing);
-    setEditing(null);
-  };
 
   useEffect(() => {
     startTransition(() => {
@@ -79,12 +74,19 @@ export default function TransactionsPage() {
           </label>
           <label className="text-sm text-slate-600">
             Category
-            <input
-              type="text"
-              className="mt-1 w-full rounded-xl border px-3 py-2"
+            <select
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
               value={filters.category}
               onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-            />
+            >
+              <option value="">All categories</option>
+              {settings.categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.icon ? `${cat.icon} ` : ""}
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
       </div>

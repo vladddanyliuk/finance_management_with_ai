@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { format, parseISO } from "date-fns";
 import { useMemo, useState } from "react";
 import { CalendarIcon, CurrencyEuroIcon, BanknotesIcon, ChartBarIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -9,6 +10,16 @@ import { useFinanceData } from "../lib/useFinanceData";
 
 const currencyFormat = (value: number, currency: string) =>
   `${value.toFixed(2)} ${currency}`;
+const calendarColor = (month: string) => {
+  const [, mm] = month.split("-");
+  const m = Number(mm);
+  if (Number.isNaN(m)) return "text-blue-600";
+  if (m === 12 || m === 1 || m === 2) return "text-sky-500"; // winter
+  if (m >= 3 && m <= 5) return "text-green-600"; // spring
+  if (m >= 6 && m <= 8) return "text-amber-500"; // summer
+  if (m >= 9 && m <= 11) return "text-orange-500"; // autumn
+  return "text-blue-600";
+};
 
 export default function DashboardPage() {
   const { settings, transactions, hydrated, addCustomMonth, deleteCustomMonth, setSettings } = useFinanceData();
@@ -29,7 +40,68 @@ export default function DashboardPage() {
   };
 
   if (!hydrated) {
-    return <p className="text-sm text-slate-500">Loading your data…</p>;
+    return (
+      <div className="relative h-48 flex items-center justify-center animate-fade coin-wrapper">
+        <Image
+          src="/gif/coin_rotation_margin.gif"
+          alt="Loading coin"
+          className="h-20 w-20 coin-loader"
+          width={80}
+          height={80}
+          priority
+          unoptimized
+        />
+        <p className="absolute bottom-4 w-full text-center text-sm font-semibold gold-text">
+          money cant wait!!
+        </p>
+        <style jsx>{`
+          .coin-wrapper {
+            perspective: 800px;
+          }
+          .coin-loader {
+            filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.12));
+            animation: coinFloat 1.6s ease-in-out infinite;
+          }
+          .gold-text {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: shimmer 1.8s linear infinite, textFloat 1.6s ease-in-out infinite;
+          }
+          @keyframes shimmer {
+            0% {
+              background-position: 0% 50%;
+            }
+            100% {
+              background-position: -200% 50%;
+            }
+          }
+          @keyframes coinFloat {
+            0% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
+            100% {
+              transform: translateY(0);
+            }
+          }
+          @keyframes textFloat {
+            0% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-6px);
+            }
+            100% {
+              transform: translateY(0);
+            }
+          }
+        `}</style>
+      </div>
+    );
   }
 
   return (
@@ -77,7 +149,7 @@ export default function DashboardPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                    <CalendarIcon className="h-5 w-5 text-blue-600" />
+                    <CalendarIcon className={`h-5 w-5 ${calendarColor(month)}`} />
                     {format(parseISO(`${month}-01`), "MMMM yyyy")}
                   </div>
                   <div className="text-xs text-slate-500">{month}</div>

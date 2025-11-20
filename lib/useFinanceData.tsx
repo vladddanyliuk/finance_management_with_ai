@@ -2,6 +2,7 @@
 
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { defaultState } from "./constants";
+import { generateId } from "./id";
 import { applyAutoBackupLimit, createAutoBackup, loadState, persistState } from "./storage";
 import {
   FinanceDataState,
@@ -91,7 +92,7 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
         ...prev,
         recurringExpenses: [
           ...prev.recurringExpenses,
-          { ...expense, id: crypto.randomUUID() },
+          { ...expense, id: generateId() },
         ],
       }));
     },
@@ -113,7 +114,8 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       setState((prev) => {
         const customMonths = prev.settings.customMonths.filter((item) => item !== month).sort();
         const nextTransactions = prev.transactions.filter((tx) => tx.month !== month);
-        const { [month]: _, ...restPlans } = prev.monthPlans;
+        const restPlans = { ...prev.monthPlans };
+        delete restPlans[month];
         const nextSettings = {
           ...prev.settings,
           customMonths,
@@ -173,7 +175,7 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       const now = new Date().toISOString();
       const nextTransaction: Transaction = {
         ...input,
-        id: crypto.randomUUID(),
+        id: generateId(),
         createdAt: now,
         updatedAt: now,
       };

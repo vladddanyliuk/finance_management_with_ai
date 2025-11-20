@@ -52,6 +52,8 @@ export const buildBackupFile = (state: FinanceDataState): BackupFile => ({
   settings: state.settings,
   transactions: state.transactions,
   monthPlans: state.monthPlans,
+  messages: state.messages,
+  lastSeenAt: state.lastSeenAt,
 });
 
 export const validateBackup = (data: BackupFile): boolean => {
@@ -60,14 +62,17 @@ export const validateBackup = (data: BackupFile): boolean => {
       typeof data.version === "string" &&
       Array.isArray(data.transactions) &&
       data.settings &&
-      data.monthPlans
+      data.monthPlans &&
+      Array.isArray((data as BackupFile).messages ?? [])
   );
 };
 
 export const createAutoBackup = (
   state: FinanceDataState,
   updatedSettings?: UserSettings,
-  updatedTransactions?: Transaction[]
+  updatedTransactions?: Transaction[],
+  updatedMessages?: FinanceDataState["messages"],
+  updatedLastSeenAt?: string
 ): AutoBackupEntry | null => {
   if (!state.settings.autoBackupEnabled) return null;
   const snapshot: AutoBackupEntry = {
@@ -77,6 +82,8 @@ export const createAutoBackup = (
     settingsSnapshot: updatedSettings ?? state.settings,
     transactionsSnapshot: updatedTransactions ?? state.transactions,
     monthPlansSnapshot: state.monthPlans,
+    messagesSnapshot: updatedMessages ?? state.messages,
+    lastSeenAtSnapshot: updatedLastSeenAt ?? state.lastSeenAt,
   };
   return snapshot;
 };

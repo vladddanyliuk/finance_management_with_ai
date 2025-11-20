@@ -26,7 +26,13 @@ interface FinanceDataContextValue extends FinanceDataState {
   addTransaction: (input: Omit<Transaction, "id" | "createdAt" | "updatedAt">) => void;
   updateTransaction: (transaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
-  restoreBackup: (settings: UserSettings, transactions: Transaction[], monthPlans?: Record<string, string>) => void;
+  restoreBackup: (
+    settings: UserSettings,
+    transactions: Transaction[],
+    monthPlans?: Record<string, string>,
+    messages?: FinanceDataState["messages"],
+    lastSeenAt?: string
+  ) => void;
 }
 
 const FinanceDataContext = createContext<FinanceDataContextValue | undefined>(undefined);
@@ -47,7 +53,13 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     setState(next);
     persistState(next);
     if (shouldBackup) {
-      const entry = createAutoBackup(next, next.settings, next.transactions);
+      const entry = createAutoBackup(
+        next,
+        next.settings,
+        next.transactions,
+        next.messages,
+        next.lastSeenAt
+      );
       if (entry) {
         const autoBackups = applyAutoBackupLimit(
           [entry, ...next.autoBackups],
@@ -67,7 +79,13 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
         const nextState = { ...prev, settings: nextSettings };
         persistState(nextState);
         if (withBackup) {
-          const entry = createAutoBackup(nextState, nextSettings, nextState.transactions);
+          const entry = createAutoBackup(
+            nextState,
+            nextSettings,
+            nextState.transactions,
+            nextState.messages,
+            nextState.lastSeenAt
+          );
           if (entry) {
             nextState.autoBackups = applyAutoBackupLimit(
               [entry, ...nextState.autoBackups],
@@ -220,7 +238,13 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
         };
         persistState(next);
         if (prev.settings.autoBackupEnabled) {
-          const entry = createAutoBackup(next, next.settings, next.transactions);
+          const entry = createAutoBackup(
+            next,
+            next.settings,
+            next.transactions,
+            next.messages,
+            next.lastSeenAt
+          );
           if (entry) {
             next.autoBackups = applyAutoBackupLimit(
               [entry, ...next.autoBackups],
@@ -243,7 +267,13 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       const next = { ...prev, transactions: nextTransactions };
       persistState(next);
       if (prev.settings.autoBackupEnabled) {
-        const entry = createAutoBackup(next, next.settings, nextTransactions);
+        const entry = createAutoBackup(
+          next,
+          next.settings,
+          nextTransactions,
+          next.messages,
+          next.lastSeenAt
+        );
         if (entry) {
           next.autoBackups = applyAutoBackupLimit(
             [entry, ...next.autoBackups],
@@ -262,7 +292,13 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       const next = { ...prev, transactions: nextTransactions };
       persistState(next);
       if (prev.settings.autoBackupEnabled) {
-        const entry = createAutoBackup(next, next.settings, nextTransactions);
+        const entry = createAutoBackup(
+          next,
+          next.settings,
+          nextTransactions,
+          next.messages,
+          next.lastSeenAt
+        );
         if (entry) {
           next.autoBackups = applyAutoBackupLimit(
             [entry, ...next.autoBackups],
@@ -275,7 +311,7 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     });
   }, []);
 
-  const restoreBackup = useCallback((settings: UserSettings, transactions: Transaction[], monthPlans?: Record<string, string>) => {
+  const restoreBackup = useCallback((settings: UserSettings, transactions: Transaction[], monthPlans?: Record<string, string>, messages?: FinanceDataState["messages"], lastSeenAt?: string) => {
     const sanitizedSettings = {
       ...defaultState.settings,
       ...settings,
@@ -286,8 +322,8 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       transactions,
       monthPlans: monthPlans ?? state.monthPlans,
       autoBackups: state.autoBackups,
-      messages: state.messages,
-      lastSeenAt: state.lastSeenAt,
+      messages: messages ?? state.messages,
+      lastSeenAt: lastSeenAt ?? state.lastSeenAt,
     };
     commitState(restored, true);
   }, [commitState, state.autoBackups, state.lastSeenAt, state.messages, state.monthPlans]);

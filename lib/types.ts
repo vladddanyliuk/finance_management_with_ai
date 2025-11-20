@@ -67,6 +67,8 @@ export interface BackupFile {
   settings: UserSettings;
   transactions: Transaction[];
   monthPlans: Record<string, string>;
+  messages: RecapMessage[];
+  lastSeenAt?: string;
 }
 
 export interface AutoBackupEntry {
@@ -76,6 +78,8 @@ export interface AutoBackupEntry {
   settingsSnapshot: UserSettings;
   transactionsSnapshot: Transaction[];
   monthPlansSnapshot: Record<string, string>;
+  messagesSnapshot: RecapMessage[];
+  lastSeenAtSnapshot?: string;
 }
 
 export interface FinanceDataState {

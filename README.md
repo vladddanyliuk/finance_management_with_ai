@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finance Management with AI
 
-## Getting Started
+A Next.js 14 application for planning monthly finances, tracking transactions, and experimenting with AI-generated savings plans. Data stays in the browser via localStorage with optional auto-backups, and everything runs entirely on the client except for the optional OpenAI-powered month planner endpoint.
 
-First, run the development server:
+## Features
+- **Custom months**: Create any month (YYYY-MM) and view income/expense summaries with seasonal visual cues.
+- **Recurring expenses & defaults**: Configure default monthly income and recurring costs (mandatory or optional) that roll into each month’s summary.
+- **Transaction tracking**: Add, edit, filter, and delete income/expense transactions with categories and notes.
+- **AI month plans (optional)**: Generate markdown budgeting plans by sending context to `/api/month-plan` using your own OpenAI API key stored in settings.
+- **PDF export**: Download AI-generated month plans directly from the month detail page.
+- **Auto-backups**: Maintain a rolling history of state snapshots based on your configurable backup limit.
+- **Offline-friendly**: All state (settings, transactions, backups, and plans) persists locally in the browser; no external database required.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech stack
+- **Framework**: Next.js App Router with React 18 client components.
+- **Styling**: Tailwind CSS and Heroicons.
+- **Date & utilities**: date-fns for formatting plus custom summary and storage helpers.
+- **PDF**: jsPDF for exporting generated plans.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project structure
+- `app/` – Next.js routes, including the dashboard (`page.tsx`), month details (`months/[month]/page.tsx`), transactions, settings, backups, and API routes.
+- `components/` – Reusable UI elements such as cards, navigation, transaction forms, and modals.
+- `lib/` – Domain logic for state management (`useFinanceData`), persistence (`storage`), summarization (`summary`), and shared types/constants.
+- `public/` – Static assets such as icons and animations.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Getting started
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open http://localhost:3000 in your browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Optional: enable AI month plans
+1. Obtain an OpenAI API key.
+2. Open **Settings** in the app and enter the key; it is stored only in localStorage.
+3. Choose an AI behavior or scenario on a month page and generate the plan.
 
-## Learn More
+## Data & backups
+- State is stored in `localStorage` under a versioned key; hydration occurs on first load.
+- Auto-backups create timestamped snapshots of settings, transactions, and month plans up to your configured limit.
+- Backup exports use a JSON file that includes version metadata for future compatibility.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
+- `npm run dev` – Start the development server.
+- `npm run build` – Create an optimized production build.
+- `npm run start` – Run the production server.
+- `npm run lint` – Lint the project with ESLint.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License**. You may use and adapt the code for non-commercial purposes with proper attribution. Commercial use of any kind is not permitted. See [LICENSE](LICENSE) for full details.

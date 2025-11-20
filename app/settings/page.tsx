@@ -5,6 +5,7 @@ import { Cog6ToothIcon, ArrowPathIcon, SparklesIcon, Squares2X2Icon } from "@her
 import { useFinanceData } from "../../lib/useFinanceData";
 import { RecurringExpense } from "../../lib/types";
 import { generateId } from "../../lib/id";
+import { AI_AUTO_CATEGORY } from "../../lib/constants";
 
 export default function SettingsPage() {
   const {
@@ -21,6 +22,8 @@ export default function SettingsPage() {
     autoBackupEnabled: settings.autoBackupEnabled,
     autoBackupMaxEntries: settings.autoBackupMaxEntries,
     openAiApiKey: settings.openAiApiKey ?? "",
+    aiAllowNewCategories: settings.aiAllowNewCategories ?? true,
+    recapDay: settings.recapDay ?? 0,
   });
 
   const [newRecurring, setNewRecurring] = useState({
@@ -44,19 +47,38 @@ export default function SettingsPage() {
         autoBackupEnabled: settings.autoBackupEnabled,
         autoBackupMaxEntries: settings.autoBackupMaxEntries,
         openAiApiKey: settings.openAiApiKey ?? "",
+        aiAllowNewCategories: settings.aiAllowNewCategories ?? true,
+        recapDay: settings.recapDay ?? 0,
       });
     });
   }, [settings]);
 
   const saveGeneral = (event: React.FormEvent) => {
     event.preventDefault();
+
+    const isNewKey = !settings.openAiApiKey && Boolean(general.openAiApiKey);
+    const hasAutoCategory = settings.categories.some(
+      (cat) => cat.name.toLowerCase() === AI_AUTO_CATEGORY.name.toLowerCase()
+    );
+    const categories =
+      isNewKey && !hasAutoCategory
+        ? [{ id: generateId(), name: AI_AUTO_CATEGORY.name, icon: AI_AUTO_CATEGORY.icon }, ...settings.categories]
+        : settings.categories;
+
     setSettings({
       currency: general.currency,
       defaultMonthlyIncome: Number(general.defaultMonthlyIncome),
       autoBackupEnabled: general.autoBackupEnabled,
       autoBackupMaxEntries: Math.max(1, Number(general.autoBackupMaxEntries) || 1),
       openAiApiKey: general.openAiApiKey,
+      aiAllowNewCategories: general.aiAllowNewCategories,
+      recapDay: general.recapDay,
+      categories,
     });
+
+    if (isNewKey && !hasAutoCategory) {
+      alert("Now you have access to categories autogeneration");
+    }
   };
 
   const handleAddRecurring = (event: React.FormEvent) => {
@@ -119,6 +141,30 @@ export default function SettingsPage() {
             onChange={(e) => setGeneral({ ...general, autoBackupEnabled: e.target.checked })}
           />
           Enable auto-backups
+        </label>
+        <label className="flex items-center gap-3 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            checked={general.aiAllowNewCategories}
+            onChange={(e) => setGeneral({ ...general, aiAllowNewCategories: e.target.checked })}
+          />
+          Allow AI to create new categories
+        </label>
+        <label className="block text-sm text-slate-600">
+          Recap day (weekly AI message)
+          <select
+            className="mt-1 w-full rounded-xl border px-3 py-2"
+            value={general.recapDay}
+            onChange={(e) => setGeneral({ ...general, recapDay: Number(e.target.value) })}
+          >
+            <option value={0}>Sunday</option>
+            <option value={1}>Monday</option>
+            <option value={2}>Tuesday</option>
+            <option value={3}>Wednesday</option>
+            <option value={4}>Thursday</option>
+            <option value={5}>Friday</option>
+            <option value={6}>Saturday</option>
+          </select>
         </label>
         <label className="block text-sm text-slate-600">
           Max auto-backups

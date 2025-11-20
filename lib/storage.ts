@@ -14,6 +14,7 @@ const sanitizeSettings = (settings: FinanceDataState["settings"]) => ({
   ...defaultState.settings,
   ...settings,
   openAiApiKey: settings?.openAiApiKey ?? "",
+  recapDay: typeof settings?.recapDay === "number" ? settings.recapDay : defaultState.settings.recapDay,
 });
 
 const parseState = (raw: string | null): FinanceDataState => {
@@ -25,6 +26,8 @@ const parseState = (raw: string | null): FinanceDataState => {
       transactions: data.transactions ?? [],
       autoBackups: data.autoBackups ?? [],
       monthPlans: data.monthPlans ?? {},
+      messages: data.messages ?? [],
+      lastSeenAt: data.lastSeenAt,
     };
   } catch (error) {
     console.warn("Failed to parse local data", error);

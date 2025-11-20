@@ -40,6 +40,8 @@ export interface UserSettings {
   autoBackupMaxEntries: number;
   lastSelectedMonth: string;
   openAiApiKey?: string;
+  aiAllowNewCategories: boolean;
+  recapDay?: number; // 0-6, Sunday = 0
 }
 
 export interface AiBehavior {
@@ -81,4 +83,14 @@ export interface FinanceDataState {
   transactions: Transaction[];
   autoBackups: AutoBackupEntry[];
   monthPlans: Record<string, string>;
+  messages: RecapMessage[];
+  lastSeenAt?: string;
+}
+
+export interface RecapMessage {
+  id: string;
+  createdAt: string;
+  month: string;
+  content: string; // markdown
+  read: boolean;
 }

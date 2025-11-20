@@ -17,6 +17,9 @@ interface FinanceDataContextValue extends FinanceDataState {
   addCustomMonth: (month: string) => void;
   deleteCustomMonth: (month: string) => void;
   setMonthPlan: (month: string, plan: string) => void;
+  addMessages: (messages: FinanceDataState["messages"]) => void;
+  markMessagesRead: () => void;
+  setLastSeenAt: (iso: string) => void;
   addRecurringExpense: (expense: Omit<RecurringExpense, "id">) => void;
   updateRecurringExpense: (expense: RecurringExpense) => void;
   deleteRecurringExpense: (id: string) => void;
@@ -148,6 +151,37 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     });
   }, []);
 
+  const addMessages = useCallback((messages: FinanceDataState["messages"]) => {
+    setState((prev) => {
+      const merged = [...messages, ...prev.messages].sort((a, b) =>
+        a.createdAt < b.createdAt ? 1 : -1
+      );
+      const deduped = merged.filter(
+        (msg, idx) => merged.findIndex((m) => m.id === msg.id) === idx
+      );
+      const next = { ...prev, messages: deduped };
+      persistState(next);
+      return { ...next };
+    });
+  }, []);
+
+  const markMessagesRead = useCallback(() => {
+    setState((prev) => {
+      const updated = prev.messages.map((msg) => ({ ...msg, read: true }));
+      const next = { ...prev, messages: updated };
+      persistState(next);
+      return { ...next };
+    });
+  }, []);
+
+  const setLastSeenAt = useCallback((iso: string) => {
+    setState((prev) => {
+      const next = { ...prev, lastSeenAt: iso };
+      persistState(next);
+      return next;
+    });
+  }, []);
+
   const updateRecurringExpense = useCallback(
     (expense: RecurringExpense) => {
       updateSettingsInternal((prev) => ({
@@ -252,9 +286,11 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
       transactions,
       monthPlans: monthPlans ?? state.monthPlans,
       autoBackups: state.autoBackups,
+      messages: state.messages,
+      lastSeenAt: state.lastSeenAt,
     };
     commitState(restored, true);
-  }, [commitState, state.autoBackups, state.monthPlans]);
+  }, [commitState, state.autoBackups, state.lastSeenAt, state.messages, state.monthPlans]);
 
   const value = useMemo<FinanceDataContextValue>(() => ({
     ...state,
@@ -263,6 +299,9 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     addCustomMonth,
     deleteCustomMonth,
     setMonthPlan,
+    addMessages,
+    markMessagesRead,
+    setLastSeenAt,
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,
@@ -277,6 +316,9 @@ export const FinanceDataProvider = ({ children }: { children: React.ReactNode })
     addCustomMonth,
     deleteCustomMonth,
     setMonthPlan,
+    addMessages,
+    markMessagesRead,
+    setLastSeenAt,
     addRecurringExpense,
     updateRecurringExpense,
     deleteRecurringExpense,

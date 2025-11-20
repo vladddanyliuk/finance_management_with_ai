@@ -60,6 +60,21 @@ export async function POST(req: NextRequest) {
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((acc, t) => acc + t.amount, 0);
   const totalExpense = transactions.filter((t) => t.type === "expense").reduce((acc, t) => acc + t.amount, 0);
   const averageDailySpend = totalExpense / Math.max(1, todayInMonth);
+  const expenseByCategory = Object.entries(
+    transactions
+      .filter((t) => t.type === "expense")
+      .reduce<Record<string, number>>((acc, t) => {
+        acc[t.category] = (acc[t.category] ?? 0) + t.amount;
+        return acc;
+      }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([category, amount]) => `${category}:${amount}`)
+    .join(" | ");
+  const behaviors = settings.aiBehaviors?.length
+    ? settings.aiBehaviors.map((b) => `${b.description} (${b.monthlyAmount})`).join(" | ")
+    : "none";
 
   const prompt = `Create a short weekly recap for personal finance with light coaching, but be firm when money is tight.
 Today: ${now.toISOString()}
@@ -74,14 +89,19 @@ Daily budget: ${summary.dailyBudget}
 Recurring expenses (mandatory/optional): ${summary.mandatoryRecurringTotal}/${summary.optionalRecurringTotal}
 Month progress day ${todayInMonth} of ${daysInMonth}, days left: ${daysLeft}
 Average daily spend so far: ${averageDailySpend}
+Top expense categories: ${expenseByCategory || "n/a"}
+User-stated behaviors/priorities: ${behaviors}
 Transactions (month only):
 ${transactions.slice(0, 30).map((t) => `${t.date} ${t.type} ${t.amount} ${t.category} ${t.note || ""}`).join(" | ")}
 
 Write markdown with:
 - Title line (e.g., "Week recap" or "Missed weeks recap").
-- Bullet points: wins, overspending spots, suggested cut amount for next week, and one habit to try.
-- A mini table with 2 rows: | Item | Amount | for total income and total expenses.
+- Bullet points: wins, overspending spots (by category), suggested cut amount for next week, and one habit to try.
+- Call out remaining cash (übrig) and how to stretch it until month-end with a concrete daily cap and 2-3 categories to freeze/trim.
+- Identify any bad habits from spend patterns and give a specific tweak for each.
 - If remaining cash looks tight (remaining less than 30% of expected burn rate for days left or daily budget below 60% of average daily spend), provide firm advice: exact daily cap, 2-3 categories to freeze, and one actionable step for today.
+- If possible, suggest one realistic way to boost income before month end.
+- A mini table with 2 rows: | Item | Amount | for total income and total expenses.
 - Keep it under 140 words.`;
 
   try {

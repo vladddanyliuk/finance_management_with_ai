@@ -13,6 +13,25 @@ const monthOrCurrent = (value: string) => {
   return `${now.getFullYear()}-${`${now.getMonth() + 1}`.padStart(2, "0")}`;
 };
 
+const formatDateRange = (from?: string, to?: string) => {
+  if (!from && !to) return "";
+  const fromDate = from ? new Date(from) : null;
+  const toDate = to ? new Date(to ?? from ?? "") : null;
+
+  if (!fromDate || Number.isNaN(fromDate.getTime()) || !toDate || Number.isNaN(toDate.getTime())) {
+    return new Date(to || from || "").toLocaleDateString();
+  }
+
+  const baseOptions: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+  const includeYearInStart = fromDate.getFullYear() !== toDate.getFullYear();
+  const fromLabel = fromDate.toLocaleDateString(undefined, {
+    ...baseOptions,
+    year: includeYearInStart ? "numeric" : undefined,
+  });
+  const toLabel = toDate.toLocaleDateString(undefined, { ...baseOptions, year: "numeric" });
+  return `${fromLabel} – ${toLabel}`;
+};
+
 export const MessagesBell = () => {
   const {
     hydrated,
@@ -123,7 +142,9 @@ export const MessagesBell = () => {
           <ul className="mt-2 space-y-2 max-h-72 overflow-y-auto">
             {messages.map((msg) => (
               <li key={msg.id} className="rounded-xl border border-slate-100 bg-white p-2">
-                <div className="text-xs text-slate-500">{new Date(msg.createdAt).toLocaleDateString()}</div>
+                <div className="text-xs font-medium text-slate-600">
+                  Recap for {formatDateRange(msg.recapFrom ?? msg.createdAt, msg.recapTo ?? msg.createdAt)}
+                </div>
                 <ReactMarkdown className="prose prose-sm max-w-none" remarkPlugins={[remarkGfm]}>
                   {msg.content}
                 </ReactMarkdown>

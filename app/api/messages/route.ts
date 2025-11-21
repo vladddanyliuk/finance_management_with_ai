@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { differenceInCalendarDays, endOfMonth, parseISO } from "date-fns";
+import { differenceInCalendarDays, endOfMonth, parseISO, subDays } from "date-fns";
 import { calculateMonthSummary } from "../../../lib/summary";
 import { Transaction, UserSettings } from "../../../lib/types";
 
@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
   const lastMessageDate = safeParse(lastMessageAt);
   const daysSinceSeen = lastSeenDate ? differenceInCalendarDays(now, lastSeenDate) : 0;
   const daysSinceMessage = lastMessageDate ? differenceInCalendarDays(now, lastMessageDate) : 999;
+  const recapStart = subDays(now, 6);
+  const recapEnd = now;
 
   const recapDay = typeof settings.recapDay === "number" ? settings.recapDay : 0;
   const isRecapDay = now.getDay() === recapDay;
@@ -80,6 +82,8 @@ export async function POST(req: NextRequest) {
 Today: ${now.toISOString()}
 Month: ${month}
 Recap window: ${isLongGap ? "long gap since user last opened app" : "this week"}
+Recap start date: ${recapStart.toISOString()}
+Recap end date: ${recapEnd.toISOString()}
 Currency: ${settings.currency}
 Default income: ${settings.defaultMonthlyIncome}
 Total income this month: ${totalIncome}
@@ -138,6 +142,8 @@ Write markdown with:
       month,
       content,
       read: false,
+      recapFrom: recapStart.toISOString(),
+      recapTo: recapEnd.toISOString(),
     };
 
     return NextResponse.json({ message });

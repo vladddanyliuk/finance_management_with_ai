@@ -97,4 +97,6 @@ export interface RecapMessage {
   month: string;
   content: string; // markdown
   read: boolean;
+  recapFrom?: string;
+  recapTo?: string;
 }

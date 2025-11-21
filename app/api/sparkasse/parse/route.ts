@@ -28,8 +28,9 @@ export async function POST(request: Request) {
     };
   }
 
-  // Use CommonJS require to avoid bundler meddling with pdf-parse internals.
-  const pdfParseModule = (eval("require") as NodeRequire)("pdf-parse") as {
+  // Use CommonJS require so the module is bundled and available at runtime (e.g., Vercel).
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfParseModule = require("pdf-parse") as {
     PDFParse: new (options: { data: Uint8Array; verbosity?: number }) => {
       getText: () => Promise<{ text: string }>;
     };

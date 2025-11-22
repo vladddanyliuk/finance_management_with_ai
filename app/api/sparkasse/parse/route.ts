@@ -3,6 +3,40 @@ import { parseSparkasseText } from "../../../../lib/sparkasseParser";
 
 export const runtime = "nodejs";
 
+const textFromPdf = async (data: Uint8Array) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdfjs: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.disableWorker = true;
+
+  const loadingTask = pdfjs.getDocument({
+    data,
+    disableWorker: true,
+    disableFontFace: true,
+    disableRange: true,
+    disableStream: true,
+    disableAutoFetch: true,
+    useWorkerFetch: false,
+    isEvalSupported: false,
+  });
+
+  const doc = await loadingTask.promise;
+  let text = "";
+
+  for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
+    const page = await doc.getPage(pageNumber);
+    const content = await page.getTextContent();
+    const pageText = content.items
+      .map((item: { str?: string }) => item?.str ?? "")
+      .join(" ");
+    text += `${pageText}\n`;
+  }
+
+  await doc.cleanup();
+  await doc.destroy();
+
+  return text;
+};
+
 export async function POST(request: Request) {
   const formData = await request.formData();
   const file = formData.get("file");
@@ -28,18 +62,7 @@ export async function POST(request: Request) {
     };
   }
 
-  // Use CommonJS require so the module is bundled and available at runtime (e.g., Vercel).
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParseModule = require("pdf-parse") as {
-    PDFParse: new (options: { data: Uint8Array; verbosity?: number }) => {
-      getText: () => Promise<{ text: string }>;
-    };
-    VerbosityLevel?: { ERRORS: number };
-  };
-  const { PDFParse, VerbosityLevel } = pdfParseModule;
-
-  const parser = new PDFParse({ data, verbosity: VerbosityLevel?.ERRORS ?? 0 });
-  const { text } = await parser.getText();
+  const text = await textFromPdf(data);
   const parsed = parseSparkasseText(text, "uploaded.pdf");
 
   return NextResponse.json(parsed);

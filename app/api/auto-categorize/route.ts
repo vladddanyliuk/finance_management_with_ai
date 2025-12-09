@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     {
       role: "system",
       content:
-        `You map personal finance transactions to categories. Prefer an existing category ONLY when there is a clear, specific match. Avoid generic buckets like General/Other unless the note is empty. When reusing a category, return the exact provided name with no extra words or emoji. If nothing fits well, create a concise new category name (1-3 words) that reflects the broader domain or activity (e.g., Music, Groceries, Transport) instead of item-level names. The user ${
+        `You map personal finance transactions to categories AND rewrite them into a clear, human note. Prefer an existing category ONLY when there is a clear, specific match. Avoid generic buckets like General/Other unless the note is empty. When reusing a category, return the exact provided name with no extra words or emoji. If nothing fits well, create a concise new category name (1-3 words) that reflects the broader domain or activity (e.g., Music, Groceries, Transport) instead of item-level names. The user ${
           allowNewCategories ? "allows" : "does NOT allow"
         } you to add new categories. If they do not allow it, you MUST pick the closest existing category. Respond ONLY with a JSON object string, no commentary.`,
     },
@@ -81,12 +81,13 @@ Available categories:
 ${categoriesList}
 
 Return JSON with shape:
-{"categoryName":"<name>","isNew":true|false,"icon":"<emoji or empty string>"}
+{"categoryName":"<name>","isNew":true|false,"icon":"<emoji or empty string>","note":"<short normalized note>"}
 - If using an existing category, categoryName must match exactly one of the provided names and isNew should be false.
 - If no good match, invent one concise domain-level category (not a product name), set isNew true (only if allowed), and suggest a simple emoji in icon (or empty string).
 - Avoid general words like "Other" or "General" unless note is empty and no specific merchant/product is present.
 - If the note mentions a specific merchant, product, platform, or activity not represented in available categories, create a new category describing that broader domain and mark isNew true (e.g., a musical instrument purchase -> "Music", game console -> "Gaming").
-- Keep names under 25 characters.`,
+- Keep names under 25 characters.
+- note should be a brief, human-friendly description (1 sentence or less) that clarifies merchant/purpose; omit emojis.`,
     },
   ];
 
@@ -116,6 +117,10 @@ Return JSON with shape:
 
     const allowNew = allowNewCategories !== false;
     const rawName = parsed?.categoryName || "";
+    const cleanedNote =
+      typeof parsed?.note === "string" && parsed.note.trim()
+        ? parsed.note.trim()
+        : (note || userCategory || "").trim();
 
     if (parsed?.isNew === true && rawName && allowNew) {
       const existingEvenIfNewFlag = pickExistingCategory(rawName, availableCategories);
@@ -124,12 +129,14 @@ Return JSON with shape:
           categoryName: existingEvenIfNewFlag.name,
           isNew: false,
           icon: existingEvenIfNewFlag.icon ?? "",
+          note: cleanedNote,
         });
       }
       return NextResponse.json({
         categoryName: rawName,
         isNew: true,
         icon: typeof parsed?.icon === "string" ? parsed.icon : "",
+        note: cleanedNote,
       });
     }
 
@@ -142,6 +149,7 @@ Return JSON with shape:
         categoryName: matchedExisting.name,
         isNew: false,
         icon: "",
+        note: cleanedNote,
       });
     }
 
@@ -151,6 +159,7 @@ Return JSON with shape:
       categoryName: fallbackName,
       isNew,
       icon: typeof parsed?.icon === "string" ? parsed.icon : "",
+      note: cleanedNote || fallbackName,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unexpected error";

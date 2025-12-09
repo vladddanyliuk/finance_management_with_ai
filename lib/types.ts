@@ -4,6 +4,8 @@ export interface RecurringExpense {
   id: string;
   name: string;
   amount: number;
+  totalAmount?: number;
+  plannedMonthlyAmount?: number;
   isMandatory: boolean;
   startMonth?: string; // YYYY-MM inclusive
   endMonth?: string; // YYYY-MM inclusive
@@ -25,6 +27,7 @@ export interface Transaction {
   amount: number;
   category: string;
   note?: string;
+  recurringExpenseId?: string;
   createdAt: string;
   updatedAt: string;
 }

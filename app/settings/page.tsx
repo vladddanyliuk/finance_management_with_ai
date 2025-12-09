@@ -29,6 +29,8 @@ export default function SettingsPage() {
   const [newRecurring, setNewRecurring] = useState({
     name: "",
     amount: "",
+    totalAmount: "",
+    plannedMonthlyAmount: "",
     isMandatory: true,
     startMonth: "",
     endMonth: "",
@@ -87,11 +89,23 @@ export default function SettingsPage() {
     addRecurringExpense({
       name: newRecurring.name,
       amount: Number(newRecurring.amount),
+      totalAmount: newRecurring.totalAmount ? Number(newRecurring.totalAmount) : Number(newRecurring.amount),
+      plannedMonthlyAmount: newRecurring.plannedMonthlyAmount
+        ? Number(newRecurring.plannedMonthlyAmount)
+        : Number(newRecurring.amount),
       isMandatory: newRecurring.isMandatory,
       startMonth: newRecurring.startMonth || undefined,
       endMonth: newRecurring.endMonth || undefined,
     });
-    setNewRecurring({ name: "", amount: "", isMandatory: true, startMonth: "", endMonth: "" });
+    setNewRecurring({
+      name: "",
+      amount: "",
+      totalAmount: "",
+      plannedMonthlyAmount: "",
+      isMandatory: true,
+      startMonth: "",
+      endMonth: "",
+    });
   };
 
   const handleAddBehavior = (event: React.FormEvent) => {
@@ -209,6 +223,20 @@ export default function SettingsPage() {
             className="rounded-xl border px-3 py-2"
           />
           <input
+            placeholder="Total to pay"
+            type="number"
+            value={newRecurring.totalAmount}
+            onChange={(e) => setNewRecurring({ ...newRecurring, totalAmount: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
+          <input
+            placeholder="Planned per month"
+            type="number"
+            value={newRecurring.plannedMonthlyAmount}
+            onChange={(e) => setNewRecurring({ ...newRecurring, plannedMonthlyAmount: e.target.value })}
+            className="rounded-xl border px-3 py-2"
+          />
+          <input
             type="month"
             placeholder="Start (YYYY-MM)"
             value={newRecurring.startMonth}
@@ -241,7 +269,7 @@ export default function SettingsPage() {
                 <div>
                   <div className="font-semibold">{expense.name}</div>
                   <div className="text-slate-500">
-                    {expense.amount.toFixed(2)} {settings.currency} · {expense.isMandatory ? "Mandatory" : "Optional"}
+                    Monthly: {(expense.plannedMonthlyAmount ?? expense.amount).toFixed(2)} {settings.currency} · Total: {(expense.totalAmount ?? expense.amount).toFixed(2)} {settings.currency} · {expense.isMandatory ? "Mandatory" : "Optional"}
                   </div>
                   <div className="text-xs text-slate-500">
                     {expense.startMonth ? `Start: ${expense.startMonth}` : "No start limit"} · {expense.endMonth ? `End: ${expense.endMonth}` : "No end limit"}
@@ -272,6 +300,30 @@ export default function SettingsPage() {
               type="number"
               value={editingRecurring.amount}
               onChange={(e) => setEditingRecurring({ ...editingRecurring, amount: Number(e.target.value) })}
+            />
+            <input
+              className="w-full rounded-xl border px-3 py-2"
+              type="number"
+              placeholder="Total to pay"
+              value={editingRecurring.totalAmount ?? editingRecurring.amount}
+              onChange={(e) =>
+                setEditingRecurring({
+                  ...editingRecurring,
+                  totalAmount: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
+            />
+            <input
+              className="w-full rounded-xl border px-3 py-2"
+              type="number"
+              placeholder="Planned per month"
+              value={editingRecurring.plannedMonthlyAmount ?? editingRecurring.amount}
+              onChange={(e) =>
+                setEditingRecurring({
+                  ...editingRecurring,
+                  plannedMonthlyAmount: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
             />
             <select
               className="w-full rounded-xl border px-3 py-2"

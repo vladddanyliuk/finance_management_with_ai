@@ -7,11 +7,18 @@ import { Transaction } from "../lib/types";
 interface TransactionEditModalProps {
   transaction: Transaction;
   categories: { id: string; name: string; icon?: string }[];
+  recurringExpenses?: { id: string; name: string }[];
   onSave: (tx: Transaction) => void;
   onClose: () => void;
 }
 
-export const TransactionEditModal = ({ transaction, categories, onSave, onClose }: TransactionEditModalProps) => {
+export const TransactionEditModal = ({
+  transaction,
+  categories,
+  recurringExpenses = [],
+  onSave,
+  onClose,
+}: TransactionEditModalProps) => {
   const [draft, setDraft] = useState<Transaction>(transaction);
   const [mounted, setMounted] = useState(false);
 
@@ -48,7 +55,14 @@ export const TransactionEditModal = ({ transaction, categories, onSave, onClose 
             <select
               className="mt-1 w-full rounded-xl border px-3 py-2"
               value={draft.type}
-              onChange={(e) => setDraft({ ...draft, type: e.target.value as Transaction["type"] })}
+              onChange={(e) => {
+                const nextType = e.target.value as Transaction["type"];
+                setDraft({
+                  ...draft,
+                  type: nextType,
+                  recurringExpenseId: nextType === "expense" ? draft.recurringExpenseId : undefined,
+                });
+              }}
             >
               <option value="expense">Expense</option>
               <option value="income">Income</option>
@@ -95,6 +109,25 @@ export const TransactionEditModal = ({ transaction, categories, onSave, onClose 
               onChange={(e) => setDraft({ ...draft, note: e.target.value })}
             />
           </label>
+          {draft.type === "expense" && recurringExpenses.length > 0 && (
+            <label className="text-sm text-slate-600">
+              Mark as payment for recurring expense
+              <select
+                className="mt-1 w-full rounded-xl border px-3 py-2"
+                value={draft.recurringExpenseId ?? ""}
+                onChange={(e) =>
+                  setDraft({ ...draft, recurringExpenseId: e.target.value || undefined })
+                }
+              >
+                <option value="">None</option>
+                {recurringExpenses.map((exp) => (
+                  <option key={exp.id} value={exp.id}>
+                    {exp.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <div className="flex justify-end gap-2">
             <button className="rounded-full border px-4 py-2 text-sm" onClick={onClose}>
               Cancel

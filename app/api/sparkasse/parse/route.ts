@@ -1,24 +1,53 @@
-import fs from "node:fs";
-import path from "node:path";
 import { NextResponse } from "next/server";
+import { createRequire } from "node:module";
 import { parseSparkasseText } from "../../../../lib/sparkasseParser";
 
 export const runtime = "nodejs";
 
-export async function POST(request: Request) {
-  const formData = await request.formData();
-  const file = formData.get("file");
+const PARSE_TIMEOUT_MS = 20_000;
+const require = createRequire(import.meta.url);
+const projectRequire = createRequire(process.cwd() + "/");
 
-  if (!(file instanceof Blob)) {
-    return NextResponse.json({ error: "No PDF uploaded." }, { status: 400 });
+// Resolve the bundled pdf.js worker so it is available in serverless output.
+function resolvePdfWorker() {
+  const candidates = [
+    "pdfjs-dist/legacy/build/pdf.worker.min.mjs",
+    "pdfjs-dist/legacy/build/pdf.worker.mjs",
+    "pdf-parse/node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs",
+    "pdf-parse/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
+  ];
+
+  let lastError: unknown;
+  for (const candidate of candidates) {
+    try {
+      // Try resolving from the built route location first, then fall back to project root.
+      return require.resolve(candidate);
+    } catch (error) {
+      lastError = error;
+      try {
+        return projectRequire.resolve(candidate);
+      } catch (errorFromRoot) {
+        lastError = errorFromRoot;
+      }
+    }
   }
 
-  const arrayBuffer = await file.arrayBuffer();
-  const data = new Uint8Array(arrayBuffer);
+  console.warn("Unable to resolve pdfjs worker script; PDF parsing may fail.", lastError);
+  return undefined;
+}
 
-  // Minimal DOMMatrix polyfill required by pdf.js when running in Node.
-  if (typeof (globalThis as unknown as { DOMMatrix?: unknown }).DOMMatrix === "undefined") {
-    (globalThis as unknown as { DOMMatrix: unknown }).DOMMatrix = class {
+let pdfWorkerSrc: string | undefined;
+
+// Polyfills required by pdfjs-dist when running in a serverless Node runtime.
+function ensurePolyfills() {
+  const globalScope = globalThis as unknown as {
+    DOMMatrix?: unknown;
+    Path2D?: unknown;
+    ImageData?: unknown;
+  };
+
+  if (typeof globalScope.DOMMatrix === "undefined") {
+    globalScope.DOMMatrix = class {
       multiplySelf() { return this; }
       preMultiplySelf() { return this; }
       invertSelf() { return this; }
@@ -30,59 +59,72 @@ export async function POST(request: Request) {
     };
   }
 
-  // Use Node's runtime resolver (not Next's bundler) to avoid mangled worker paths.
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval
-  const nodeRequire = eval("require") as NodeRequire;
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParseModule = nodeRequire("pdf-parse") as {
-    PDFParse: {
-      new (options: { data: Uint8Array; verbosity?: number }): {
-        getText: () => Promise<{ text: string }>;
-      };
-      setWorker?: (workerSrc: string) => string | undefined;
+  if (typeof globalScope.Path2D === "undefined") {
+    globalScope.Path2D = class {};
+  }
+
+  if (typeof globalScope.ImageData === "undefined") {
+    globalScope.ImageData = class {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      constructor(_data?: unknown, _width?: number, _height?: number) {}
     };
-    VerbosityLevel?: { ERRORS: number };
-  };
-  const { PDFParse, VerbosityLevel } = pdfParseModule;
+  }
+}
 
-  // Point workerSrc to the pdfjs-dist copy that ships with pdf-parse (matching versions).
-  // Prefer the pdf.js worker that ships with pdf-parse to avoid version mismatch.
-  const pdfParseEntry = nodeRequire.resolve("pdf-parse");
-  let pdfParseRoot: string | null = null;
-  {
-    let dir = path.dirname(pdfParseEntry);
-    const root = path.parse(dir).root;
-    while (dir !== root) {
-      const pkgPath = path.join(dir, "package.json");
-      if (fs.existsSync(pkgPath)) {
+export async function POST(request: Request) {
+  ensurePolyfills();
+
+  // Delay loading pdf-parse until after polyfills are applied to avoid DOMMatrix errors.
+  const { PDFParse, VerbosityLevel } = await import("pdf-parse");
+  if (!pdfWorkerSrc) {
+    pdfWorkerSrc = resolvePdfWorker();
+  }
+  if (pdfWorkerSrc) {
+    PDFParse.setWorker(pdfWorkerSrc);
+  }
+
+  const formData = await request.formData();
+  const file = formData.get("file");
+
+  if (!(file instanceof Blob)) {
+    return NextResponse.json({ error: "No PDF uploaded." }, { status: 400 });
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const dataBuffer = Buffer.from(arrayBuffer);
+
+  try {
+    const parseStart = Date.now();
+
+    const text = await Promise.race([
+      (async () => {
+        const parser = new PDFParse({
+          data: dataBuffer,
+          verbosity: VerbosityLevel?.ERRORS ?? 0,
+        });
         try {
-          const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8")) as { name?: string };
-          if (pkg.name === "pdf-parse") {
-            pdfParseRoot = dir;
-            break;
+          const { text: parsedText } = await parser.getText();
+          return parsedText;
+        } finally {
+          if (typeof parser.destroy === "function") {
+            await parser.destroy().catch(() => {});
           }
-        } catch {
-          // keep walking up
         }
-      }
-      dir = path.dirname(dir);
-    }
+      })(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("PDF parse timed out")), PARSE_TIMEOUT_MS)
+      ),
+    ]);
+
+    const parseElapsedMs = Date.now() - parseStart;
+    console.log(`sparkasse parse ms=${Math.round(parseElapsedMs)}`);
+
+    const parsed = parseSparkasseText(text, "uploaded.pdf");
+
+    return NextResponse.json(parsed);
+  } catch (error) {
+    console.error("PDF Parse Error:", error);
+    const message = error instanceof Error ? error.message : "Failed to parse PDF";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const workerCandidates = [
-    pdfParseRoot ? path.join(pdfParseRoot, "node_modules", "pdfjs-dist", "build", "pdf.worker.mjs") : null,
-    path.join(process.cwd(), "node_modules", "pdfjs-dist", "build", "pdf.worker.mjs"),
-  ];
-  for (const workerPath of workerCandidates) {
-    if (!workerPath) continue;
-    if (!fs.existsSync(workerPath)) continue;
-    PDFParse.setWorker?.(workerPath);
-    break;
-  }
-
-  const parser = new PDFParse({ data, verbosity: VerbosityLevel?.ERRORS ?? 0 });
-  const { text } = await parser.getText();
-  const parsed = parseSparkasseText(text, "uploaded.pdf");
-
-  return NextResponse.json(parsed);
 }
